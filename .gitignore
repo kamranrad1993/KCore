@@ -1,0 +1,6 @@
+build
+build/*
+external/asio*
+external/backward*
+.vscode
+CMakeLists.txt.user

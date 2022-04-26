@@ -1,0 +1,245 @@
+#pragma once
+#include <climits>
+#include <hash_map>
+#include <iosfwd>
+#include <memory>
+#include <networking/http_definitions.h>
+#include <random>
+#include <tools/format_string.h>
+#include <tools/istream_tools.h>
+
+namespace KCore
+{
+    using namespace std;
+
+    enum RESPONSE_HEADER_TYPES
+    {
+        unknown,
+        Accept_Ranges,
+        Age,
+        ETag,
+        Location,
+        Proxy_Authenticate,
+        Retry_After,
+        Server,
+        Vary,
+        WWW_Authenticate,
+        Allow,
+        Content_Encoding,
+        Content_Language,
+        Content_Length,
+        Content_Location,
+        Content_MD5,
+        Content_Range,
+        Content_Type,
+        Expires,
+        Last_Modified,
+        extension_header
+    };
+
+    const string RESPONSE_HEADER_NAMES[] =
+        {
+            "unknown",
+            "Accept-Ranges",
+            "Age",
+            "ETag",
+            "Location",
+            "Proxy-Authenticate",
+            "Retry-After",
+            "Server",
+            "Vary",
+            "WWW-Authenticate",
+            "Allow",
+            "Content-Encoding",
+            "Content-Language",
+            "Content-Length",
+            "Content-Location",
+            "Content-MD5",
+            "Content-Range",
+            "Content-Type",
+            "Expires",
+            "Last-Modified",
+            "extension-header"};
+
+    const map<string, RESPONSE_HEADER_TYPES> RESPONSE_HEADER_NAME_TO_TYPE = {
+        {"Accept-Ranges", RESPONSE_HEADER_TYPES::Accept_Ranges},
+        {"Age", RESPONSE_HEADER_TYPES::Age},
+        {"ETag", RESPONSE_HEADER_TYPES::ETag},
+        {"Location", RESPONSE_HEADER_TYPES::Location},
+        {"Proxy-Authenticate", RESPONSE_HEADER_TYPES::Proxy_Authenticate},
+        {"Retry-After", RESPONSE_HEADER_TYPES::Retry_After},
+        {"Server", RESPONSE_HEADER_TYPES::Server},
+        {"Vary", RESPONSE_HEADER_TYPES::Vary},
+        {"WWW-Authenticate", RESPONSE_HEADER_TYPES::WWW_Authenticate},
+        {"Allow", RESPONSE_HEADER_TYPES::Allow},
+        {"Content-Encoding", RESPONSE_HEADER_TYPES::Content_Encoding},
+        {"Content-Language", RESPONSE_HEADER_TYPES::Content_Language},
+        {"Content-Length", RESPONSE_HEADER_TYPES::Content_Length},
+        {"Content-Location", RESPONSE_HEADER_TYPES::Content_Location},
+        {"Content-MD5", RESPONSE_HEADER_TYPES::Content_MD5},
+        {"Content-Range", RESPONSE_HEADER_TYPES::Content_Range},
+        {"Content-Type", RESPONSE_HEADER_TYPES::Content_Type},
+        {"Expires", RESPONSE_HEADER_TYPES::Expires},
+        {"Last-Modified", RESPONSE_HEADER_TYPES::Last_Modified},
+        {"extension-header", RESPONSE_HEADER_TYPES::extension_header}};
+
+    struct IResponse
+    {
+    private:
+        bool typeDetected = false;
+        RESPONSE_HEADER_TYPES cachedType = unknown;
+
+    public:
+        string name;
+        string pureValue;
+
+        RESPONSE_HEADER_TYPES getType()
+        {
+            if (!typeDetected)
+            {
+                const auto it = RESPONSE_HEADER_NAME_TO_TYPE.find(name);
+                if (it == RESPONSE_HEADER_NAME_TO_TYPE.end())
+                {
+                    cachedType = RESPONSE_HEADER_TYPES::unknown;
+                }
+                cachedType = it->second;
+            }
+            return cachedType;
+        }
+    };
+
+#define RESPONSE_HEADER_REGISTERY ResponseHeaderRegistery::getInstance()
+    class ResponseHeaderRegistery
+    {
+    private:
+#define CreateResponseHeaderType function<IResponse()>
+        map<string, CreateResponseHeaderType> headers;
+
+    public:
+        static ResponseHeaderRegistery &getInstance()
+        {
+            static ResponseHeaderRegistery s_instance;
+            return s_instance;
+        }
+
+        template <typename U>
+        void registerHeader(string name)
+        {
+            headers.insert({name, [name]() -> U
+                            {
+                                U instance = {};
+                                instance.name = name;
+                                return instance;
+                            }});
+        }
+
+        IResponse createHeader(string name, RESPONSE_HEADER_TYPES type)
+        {
+            const auto it = headers.find(name);
+            if (it == headers.end())
+            {
+                throw runtime_error("Header Not Registerd");
+                return {}; // not a derived class
+            }
+            auto instance = (it->second)();
+            return (it->second)();
+        }
+
+        template <typename T>
+        class Creator
+        {
+        public:
+            explicit Creator(const std::string &name)
+            {
+                RESPONSE_HEADER_REGISTERY.registerHeader<T>(name);
+            }
+        };
+    };
+
+#define REGISTER_RESPONSE_HEADER(header_type, header_name) \
+    ResponseHeaderRegistery::Creator<header_type> s_##header_type##Creator(#header_name);
+
+    struct ResponseAcceptRange : IResponse
+    {
+    };
+    REGISTER_RESPONSE_HEADER(ResponseAcceptRange, RESPONSE_HEADER_NAMES[RESPONSE_HEADER_TYPES::Accept_Ranges]);
+
+    struct ResponseAge : IResponse
+    {
+    };
+    REGISTER_RESPONSE_HEADER(ResponseAge, RESPONSE_HEADER_NAMES[RESPONSE_HEADER_TYPES::Age]);
+
+    struct ResponseETag : IResponse
+    {
+    };
+    REGISTER_RESPONSE_HEADER(ResponseETag, RESPONSE_HEADER_NAMES[RESPONSE_HEADER_TYPES::ETag]);
+
+    struct ResponseLocation : IResponse
+    {
+    };
+
+    struct ResponseProxyAuthenticate : IResponse
+    {
+    };
+
+    struct ResponseRetryAfter : IResponse
+    {
+    };
+
+    struct ResponseServer : IResponse
+    {
+    };
+
+    struct ResponseVary : IResponse
+    {
+    };
+
+    struct ResponseWWWAuthenticate : IResponse
+    {
+    };
+
+    struct ResponseAllow : IResponse
+    {
+    };
+
+    struct ResponseContentEncoding : IResponse
+    {
+    };
+
+    struct ResponseContentLanguage : IResponse
+    {
+    };
+
+    struct ResponseContentLength : IResponse
+    {
+    };
+
+    struct ResponseContentLocation : IResponse
+    {
+    };
+
+    struct ResponseContentMD5 : IResponse
+    {
+    };
+
+    struct ResponseContentRange : IResponse
+    {
+    };
+
+    struct ResponseContentType : IResponse
+    {
+    };
+
+    struct ResponseExpires : IResponse
+    {
+    };
+
+    struct ResponseLastModified : IResponse
+    {
+    };
+
+    struct ResponseExtension_Header : IResponse
+    {
+    };
+
+} // namespace KCore
