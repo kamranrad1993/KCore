@@ -1,5 +1,4 @@
 #pragma once
-#include <debuging/logging.h>
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -254,6 +253,7 @@ namespace KCore
 
             m_sbuf->pubseekpos(m_pos);
             setbuf(nullptr, 0);
+            return *this;
         }
 
     protected:

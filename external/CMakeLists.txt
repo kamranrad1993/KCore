@@ -1,5 +1,5 @@
 set(EXTERNAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external)
-set(EXTERNAL_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/Libs)
+set(EXTERNAL_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/external)
 set(EXTERNAL_LIBS_DIR ${CMAKE_CURRENT_BINARY_DIR}/LibsBuilds)
 
 include(ExternalProject)
@@ -36,8 +36,6 @@ endif()
 file(GLOB BACKWARD_HEADERS ${BACKWARD_SOURCE}/*.hpp)
 file(GLOB BACKWARD_SOURCES ${BACKWARD_SOURCE}/*.cpp)
 set(BACKWARD_INCLUDE_DIR ${BACKWARD_SOURCE})
-
-
 list(APPEND EXTERNAL_HEADERS ${BACKWARD_HEADERS})
 list(APPEND EXTERNAL_SOURCES ${BACKWARD_SOURCES})
 
@@ -76,6 +74,44 @@ file(GLOB_RECURSE ASIO_HEADERS
     ${ASIO_SOURCE}/include/*.
 )
 set(ASIO_INCLUDE_DIR ${ASIO_SOURCE}/include)
-
-
 list(APPEND EXTERNAL_HEADERS ${ASIO_HEADERS})
+
+
+
+
+
+set(CURL_NAME_VERSION curl-7.83.0)
+set(CURL_SOURCE ${EXTERNAL_DIR}/${CURL_NAME_VERSION})
+set(CURL_ARCHIVE ${EXTERNAL_DIR}/${CURL_NAME_VERSION}.zip)
+if(NOT EXISTS ${CURL_ARCHIVE})
+    message(STATUS "Download CURL")
+    execute_process(
+        COMMAND ${WGET_COMMAND} -O ${CURL_ARCHIVE} --show-progress https://curl.se/download/curl-7.83.0.zip
+        WORKING_DIRECTORY ${EXTERNAL_DIR}
+        RESULT_VARIABLE result
+    )
+    if(result)
+        message(STATUS "Path : "  ${CURL_ARCHIVE})
+        message(FATAL_ERROR "Failed To Download CURL : " ${result})
+    endif()
+
+    execute_process(
+        COMMAND ${UNZIP_COMMAND} -o -q ${CURL_ARCHIVE}
+        WORKING_DIRECTORY ${EXTERNAL_DIR}
+        RESULT_VARIABLE result
+    )
+    if(result)
+        message(FATAL_ERROR "Failed To Extract CURL : " ${error_code})
+    endif()
+else()
+    message(STATUS "Backward Archive Loaded At Path : "  ${CURL_ARCHIVE})
+endif()
+file(GLOB_RECURSE CURL_HEADERS 
+    ${CURL_SOURCE}/include/*.hpp
+    ${CURL_SOURCE}/include/*.
+)
+set(CURL_INCLUDE_DIR ${CURL_SOURCE}/include)
+set(CURL_LIB_FILE ${EXTERNAL_BUILD_DIR}/${CURL_NAME_VERSION}/lib/libcurl-d.a)
+list(APPEND EXTERNAL_HEADERS ${CURL_HEADERS})
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(${CURL_SOURCE})

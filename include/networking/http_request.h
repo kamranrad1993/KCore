@@ -33,7 +33,6 @@ namespace KCore
         {
             return out << instance.key << COLON << instance.value << END_LINE;
         }
-
     };
 
     struct RequestMethod
@@ -227,6 +226,11 @@ namespace KCore
         friend ostream &operator<<(ostream &out, const RequestAddress &instance)
         {
             return out << instance.host << "/" << instance.path;
+        }
+
+        string str()
+        {
+            return host + "/" + path;
         }
     };
 

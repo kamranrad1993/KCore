@@ -1,6 +1,7 @@
 #pragma once
 
 #include <asio.hpp>
+#include <curl/curl.h>
 #include <debuging/logging.h>
 #include <exception>
 #include <fstream>
@@ -21,14 +22,28 @@ namespace KCore
 #define RESPONSE_BUFFER_SIZE 4096
         asio::io_context io_context;
         tcp::resolver resolver;
+        // CURL *curl;
+
+        // shared_ptr<HttpResponse> sendHttp_1_1(RequestAddress &address, HttpRequest &request)
+        // {
+        //     curl_easy_setopt(curl, CURLOPT_URL, address.str().c_str());
+        //     CURLcode res = curl_easy_perform(curl);
+        //     if (res != CURLE_OK)
+        //         fprintf(stderr, "curl_easy_perform() failed: %s\n",
+        //                 curl_easy_strerror(res));
+
+        //     curl_easy_cleanup(curl);
+        // }
 
     public:
         SimpleHttpRequest() : io_context(), resolver(io_context)
         {
+            // curl = curl_easy_init();
         }
 
         shared_ptr<HttpResponse> send(RequestAddress &address, HttpRequest &request)
         {
+
             tcp::resolver::results_type endpoints = resolver.resolve(address.host, "http");
             tcp::socket socket(io_context);
             auto endpoint = asio::connect(socket, endpoints);

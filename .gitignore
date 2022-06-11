@@ -2,5 +2,6 @@ build
 build/*
 external/asio*
 external/backward*
+external/curl*
 .vscode
 CMakeLists.txt.user

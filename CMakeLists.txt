@@ -16,6 +16,7 @@ set(PROJECT_HEADER_DIR
     ${KCORE_HEADER_DIR}
     ${BACKWARD_INCLUDE_DIR}
     ${ASIO_INCLUDE_DIR}
+    ${CURL_INCLUDE_DIR}
 )
 
 include_directories(${PROJECT_HEADER_DIR})
@@ -38,6 +39,10 @@ target_link_libraries(KCore
     KCore-set-app-flags
     stdc++
     ${CMAKE_DL_LIBS}
+    ${CURL_LIB_FILE}
+    ssl #TODO curl dependency. enable it in external cmake.
+    crypto #TODO curl dependency. enable it in external cmake.
+    z #TODO curl dependency. enable it in external cmake.
 )
 target_compile_definitions(KCore PUBLIC  
     #disable debug optimization seems that not work in this way 

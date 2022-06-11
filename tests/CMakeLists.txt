@@ -33,3 +33,4 @@ endfunction()
 
 build_test(logging)
 build_test(networking)
+build_test(socket)
