@@ -39,32 +39,30 @@ namespace KCore
         {
             loop_condition = true;
             vector<uint8_t> data;
-            uint data_iterate = 1;
-            data.reserve(buffer_size);
             while (loop_condition)
             {
                 size_t len = recv(socket_instance, buffer.data(), buffer_size, 0);
-                LOG(len);
-                if (len > 0 && len <= buffer_size)
+                if (len > 0 && len < buffer_size)
                 {
-                    LOG("receive complete");
+                    data.reserve(data.size() + len);
                     data.insert(data.end(), buffer.begin(), buffer.begin() + len);
                     void *result = malloc(data.size());
-                    memcpy(result, buffer.data(), data.size());
-                    on_receive(result, len);
+                    memcpy(result, data.data(), data.size());
+                    on_receive(result, data.size());
+                    data.clear();
+                    data.shrink_to_fit();
+                    buffer.clear();
                 }
-                else if (len > buffer_size)
+                else if (len == buffer_size)
                 {
-                    LOG("receiving");
-                    data_iterate++;
-                    data.insert(data.end(), buffer.begin(), buffer.end());
-                    data.reserve(data_iterate * buffer_size);
+                    data.reserve(data.size() + buffer_size);
+                    data.insert(data.end(), buffer.begin(), buffer.begin() + len);
                 }
                 else
                 {
-                    LOG("receiving failed");
                     data.clear();
                     data.shrink_to_fit();
+                    buffer.clear();
                     if (on_disconnect)
                         on_disconnect(0);
                     loop_condition = false;

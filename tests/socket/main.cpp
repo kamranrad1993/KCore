@@ -18,20 +18,20 @@ void on_receive(void *data)
 
 int main(int argc, char **argv)
 {
-    // REGISTER_ALL_SIGNAL_TRACE_BACK();
+    REGISTER_ALL_SIGNAL_TRACE_BACK();
     // Socket s("localhost", 65432);
     Socket s("127.0.0.1", 65432);
     // s.on_receive = on_receive;
     s.on_receive = [](void *data, size_t len)
     {
-        LOG((char *)data);
+        LOG(len, "  ", (char *)data);
     };
     s.on_disconnect = [](int code)
     {
-        LOG("disconnected");
+        LOG("disconnected ", code);
     };
     LOG("connection result : ", s.connect());
-    sleep(2);
+    sleep(10);
     s.disconnect();
 
     return 0;
