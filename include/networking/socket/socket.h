@@ -124,4 +124,4 @@ namespace KCore
             // }
         }
     };
-}
+} // namespace KCore

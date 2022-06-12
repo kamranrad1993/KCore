@@ -1,11 +1,16 @@
 ✘ use curl instead of asio @cancelled(22-06-04 21:41)
 ☐ create pure socket connection
-    ☐ create a fork for each cnnection
-    ☐ using socket.h for linux
+    ✔ create a fork for each cnnection @done(22-06-12 23:01)
+    ✔ using socket.h for linux @done(22-06-12 23:03)
+    ☐ DNS query
     ☐ using winsock for windows
     ☐ TLS socket
     ☐ websocket
     ☐ ipv6 support
     
 ☐ create file system
+
+☐ create Stacktrace 
+    ✔ for linux @done(22-06-12 23:02)
+    ☐ for windows
 
