@@ -24,7 +24,7 @@ namespace KCore
     private:
         size_t buffer_size = 256;
         vector<uint8_t> buffer;
-        struct sockaddr_in serv_addr;
+        vector<sockaddr_in> serv_addrs;
         int socket_instance;
         bool loop_condition = false;
         thread *loop_thread;
@@ -79,29 +79,39 @@ namespace KCore
         Socket(const char *address, int len, uint16_t port)
         {
             buffer = vector<uint8_t>(buffer_size, 0);
-
             socket_instance = socket(AF_INET, SOCK_STREAM, 0);
+            hostent *host = gethostbyname(address);
 
-            // hostent *host = gethostbyname(address);
-            // // hostent *host = gethostbyaddr_r(address, len, AF_INET);
-            // LOG(host->h_addr_list[0]);
+            char **ptr = host->h_addr_list;
+            for (char *addr = *host->h_addr_list; addr; addr = *++ptr)
+            {
+                sockaddr_in serv_addr;
+                serv_addr.sin_family = AF_INET;
+                serv_addr.sin_port = htons(port);
+                serv_addr.sin_addr.s_addr = inet_addr(inet_ntoa(*((struct in_addr *)addr)));
+
+                serv_addrs.push_back(serv_addr);
+            }
+
             // serv_addr.sin_family = AF_INET;
-            // serv_addr.sin_addr.s_addr = inet_addr(host->h_addr_list[0]);
+            // serv_addr.sin_addr.s_addr = inet_addr(address);
             // serv_addr.sin_port = htons(port);
-
-            serv_addr.sin_family = AF_INET;
-            serv_addr.sin_addr.s_addr = inet_addr(address);
-            serv_addr.sin_port = htons(port);
         }
 
         int connect()
         {
-            int result = ::connect(socket_instance, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-            if (result >= 0)
-                loop_thread = new thread([this]()
-                                         { this->loop(); });
-            return result;
-            // loop();
+            for (sockaddr_in serv_addr : serv_addrs)
+            {
+                int result = ::connect(socket_instance, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+                if (result >= 0)
+                {
+                    LOG(serv_addr.sin_addr.s_addr);
+                    loop_thread = new thread([this]()
+                                             { this->loop(); });
+                    return result;
+                }
+            }
+            return -1;
         }
 
         void send(uint8_t *data, size_t len)

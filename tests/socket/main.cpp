@@ -12,16 +12,13 @@
 using namespace std;
 using namespace KCore;
 
-void on_receive(void *data)
-{
-}
 
 int main(int argc, char **argv)
 {
     REGISTER_ALL_SIGNAL_TRACE_BACK();
+    // Socket s("www.google.com", 80);
     Socket s("localhost", 65432);
     // Socket s("127.0.0.1", 65432);
-    // s.on_receive = on_receive;
     s.on_receive = [](void *data, size_t len)
     {
         LOG(len, "  ", (char *)data);
