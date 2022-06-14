@@ -3,17 +3,22 @@ set(EXTERNAL_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/external)
 set(EXTERNAL_LIBS_DIR ${CMAKE_CURRENT_BINARY_DIR}/LibsBuilds)
 
 include(ExternalProject)
-set(WGET_COMMAND "wget")
-set(UNZIP_COMMAND "unzip")
-set(TAR_COMMAND "tar")
+set(CURL_COMMAND "curl")
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(TAR_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/${CMAKE_SYSTEM_NAME}/bsdtar.exe)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(TAR_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/${CMAKE_SYSTEM_NAME}/bsdtar)
+else()
+    message(FATAL_ERROR "Unsupported system: ${CMAKE_SYSTEM_NAME}")
+endif()
 
 set(BACKWARD_SOURCE ${EXTERNAL_DIR}/backward-cpp-master)
 set(BACKWARD_ARCHIVE ${EXTERNAL_DIR}/backward.zip)
 if(NOT EXISTS ${BACKWARD_ARCHIVE})
     message(STATUS "Download Backward-cpp")
     execute_process(
-        COMMAND ${WGET_COMMAND} -O ${BACKWARD_ARCHIVE} --show-progress https://github.com/kamranrad1993/backward-cpp/archive/refs/heads/master.zip
+        COMMAND ${CURL_COMMAND} -L -o ${BACKWARD_ARCHIVE} https://github.com/kamranrad1993/backward-cpp/archive/refs/heads/master.zip
         WORKING_DIRECTORY ${EXTERNAL_DIR}
         RESULT_VARIABLE result
     )
@@ -23,7 +28,7 @@ if(NOT EXISTS ${BACKWARD_ARCHIVE})
     endif()
 
     execute_process(
-        COMMAND ${UNZIP_COMMAND} -o -q ${BACKWARD_ARCHIVE}
+        COMMAND ${TAR_COMMAND} -xf ${BACKWARD_ARCHIVE}
         WORKING_DIRECTORY ${EXTERNAL_DIR}
         RESULT_VARIABLE result
     )
@@ -49,7 +54,7 @@ set(ASIO_ARCHIVE ${EXTERNAL_DIR}/asio.tar.bz2)
 if(NOT EXISTS ${ASIO_ARCHIVE})
     message(STATUS "Download ASIO")
     execute_process(
-        COMMAND ${WGET_COMMAND} -O ${ASIO_ARCHIVE} --show-progress https://altushost-swe.dl.sourceforge.net/project/asio/asio/1.22.1%20%28Stable%29/asio-1.22.1.tar.bz2
+        COMMAND ${CURL_COMMAND} -L -o ${ASIO_ARCHIVE} https://altushost-swe.dl.sourceforge.net/project/asio/asio/1.22.1%20%28Stable%29/asio-1.22.1.tar.bz2
         WORKING_DIRECTORY ${EXTERNAL_DIR}
         RESULT_VARIABLE result
     )
@@ -86,7 +91,7 @@ set(CURL_ARCHIVE ${EXTERNAL_DIR}/${CURL_NAME_VERSION}.zip)
 if(NOT EXISTS ${CURL_ARCHIVE})
     message(STATUS "Download CURL")
     execute_process(
-        COMMAND ${WGET_COMMAND} -O ${CURL_ARCHIVE} --show-progress https://curl.se/download/curl-7.83.0.zip
+        COMMAND ${CURL_COMMAND} -L -o ${CURL_ARCHIVE} https://curl.se/download/curl-7.83.0.zip
         WORKING_DIRECTORY ${EXTERNAL_DIR}
         RESULT_VARIABLE result
     )
@@ -96,7 +101,7 @@ if(NOT EXISTS ${CURL_ARCHIVE})
     endif()
 
     execute_process(
-        COMMAND ${UNZIP_COMMAND} -o -q ${CURL_ARCHIVE}
+        COMMAND ${TAR_COMMAND} -xf ${CURL_ARCHIVE}
         WORKING_DIRECTORY ${EXTERNAL_DIR}
         RESULT_VARIABLE result
     )

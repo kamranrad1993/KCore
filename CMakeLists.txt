@@ -47,6 +47,7 @@ target_link_libraries(KCore
 target_compile_definitions(KCore PUBLIC  
     #disable debug optimization seems that not work in this way 
     -DCMAKE_CXX_FLAGS_DEBUG=-O0
+    -DBACKWARD_HAS_UNWIND=1
 )
 
 if(${BUILD_TESTS})
