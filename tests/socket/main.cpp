@@ -12,7 +12,6 @@
 using namespace std;
 using namespace KCore;
 
-
 int main(int argc, char **argv)
 {
     REGISTER_ALL_SIGNAL_TRACE_BACK();
@@ -28,6 +27,12 @@ int main(int argc, char **argv)
         LOG("disconnected ", code);
     };
     LOG("connection result : ", s.connect());
+
+    char* msg_1 = "msg_1";
+    char* msg_2 = "msg_2";
+    s.async_send((void*)msg_1, strlen(msg_1));
+    sleep(1);
+    s.send((void*)msg_2, strlen(msg_2));
     sleep(10);
     s.disconnect();
 

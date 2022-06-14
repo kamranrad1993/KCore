@@ -72,7 +72,7 @@ if(NOT EXISTS ${ASIO_ARCHIVE})
         message(FATAL_ERROR "Failed To Extract ASIO : " ${error_code})
     endif()
 else()
-    message(STATUS "Backward Archive Loaded At Path : "  ${ASIO_ARCHIVE})
+    message(STATUS "ASIO Archive Loaded At Path : "  ${ASIO_ARCHIVE})
 endif()
 file(GLOB_RECURSE ASIO_HEADERS 
     ${ASIO_SOURCE}/include/*.hpp
@@ -109,7 +109,7 @@ if(NOT EXISTS ${CURL_ARCHIVE})
         message(FATAL_ERROR "Failed To Extract CURL : " ${error_code})
     endif()
 else()
-    message(STATUS "Backward Archive Loaded At Path : "  ${CURL_ARCHIVE})
+    message(STATUS "CURL Archive Loaded At Path : "  ${CURL_ARCHIVE})
 endif()
 file(GLOB_RECURSE CURL_HEADERS 
     ${CURL_SOURCE}/include/*.hpp

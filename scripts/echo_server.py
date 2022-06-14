@@ -11,15 +11,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     with conn:
         print(f"Connected by {addr}")
         conn.sendall(b"hi")
-        sleep(1)
-        conn.sendall(b"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa++++++++++++++++++++++++++++++++++++++++++++++++++++++++bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb***********************************************************cccccccccccccccccccccccccccccccccccccccccccccccc")
-        sleep(2)
-        conn.close
-        # while True:
-        #     data = conn.recv(1024)
-        #     if not data:
-        #         break
-        #     conn.sendall(data)
+        # sleep(1)
+        # conn.sendall(b"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa++++++++++++++++++++++++++++++++++++++++++++++++++++++++bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb***********************************************************cccccccccccccccccccccccccccccccccccccccccccccccc")
+        # sleep(2)
+        # conn.close
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                break
+            conn.sendall(data)
 
 # cretae socket server class and pass the port number
 # class SocketServer(object):

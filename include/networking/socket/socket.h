@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <debuging/logging.h>
+#include <future>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <thread>
@@ -114,14 +115,40 @@ namespace KCore
             return -1;
         }
 
-        void send(uint8_t *data, size_t len)
+        future<int> async_connect()
+        {
+            future<int> fobj = async(launch::async, [this]()
+                                     {
+                                         return this->connect();
+                                     });
+            return fobj;
+        }
+
+        void send(void *data, size_t len)
         {
             ::send(socket_instance, data, len, 0);
+        }
+
+        future<void> async_send(void *data, size_t len)
+        {
+            future<void> fobj = async(launch::async, [this, data, len]()
+                                      {
+                                          this->send(data, len);
+                                      });
+            return fobj;
         }
 
         void disconnect()
         {
             ::close(socket_instance);
+        }
+
+        future<void> async_disconnect()
+        {
+            future<void> fobj = async(launch::async, [this]()
+            {
+                this->disconnect();
+            });
         }
 
         ~Socket()
