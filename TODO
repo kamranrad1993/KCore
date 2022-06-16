@@ -8,6 +8,7 @@
     ☐ websocket
     ☐ ipv6 support
     ✔ Async @done(22-06-14 22:39)
+    ☐ loop thread may not kill. must review
     
 ☐ create file system
 
