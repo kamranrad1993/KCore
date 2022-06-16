@@ -1,7 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include <iostream>
-#include <execinfo.h>
+// #include <execinfo.h>
 #include <debuging/call_stace_trace.h>
 #include <assert.h>
 
@@ -9,6 +9,7 @@ namespace KCore
 {
     using namespace std;
 
+#ifdef LINUX_PLATFORM
 #define ANSI_COLOR_RESET "\x1b[0m"
 
 #define ANSI_FOR_COLOR_BLACK "\x1b[30m"
@@ -28,6 +29,28 @@ namespace KCore
 #define ANSI_BACK_COLOR_MAGENTA "\x1b[45m"
 #define ANSI_BACK_COLOR_CYAN "\x1b[46m"
 #define ANSI_BACK_COLOR_WHITE "\x1b[47m"
+#endif
+#ifdef WINDOWS_PLATFORM
+#define ANSI_COLOR_RESET ""
+
+#define ANSI_FOR_COLOR_BLACK ""
+#define ANSI_FOR_COLOR_RED ""
+#define ANSI_FOR_COLOR_GREEN ""
+#define ANSI_FOR_COLOR_YELLOW ""
+#define ANSI_FOR_COLOR_BLUE ""
+#define ANSI_FOR_COLOR_MAGENTA ""
+#define ANSI_FOR_COLOR_CYAN ""
+#define ANSI_FOR_COLOR_WHITE ""
+
+#define ANSI_BACK_COLOR_BLACK ""
+#define ANSI_BACK_COLOR_RED ""
+#define ANSI_BACK_COLOR_GREEN ""
+#define ANSI_BACK_COLOR_YELLOW ""
+#define ANSI_BACK_COLOR_BLUE ""
+#define ANSI_BACK_COLOR_MAGENTA ""
+#define ANSI_BACK_COLOR_CYAN ""
+#define ANSI_BACK_COLOR_WHITE ""
+#endif
 
 #define NEW_LINE "\n"
 #define TAB "\t"
