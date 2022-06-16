@@ -6,6 +6,15 @@ set(CMAKE_CXX_STANDARD 17)
 # list(APPEND ${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} "-rdynamic") 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3")
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(PLATFORM "WINDOWS_PLATFORM")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(PLATFORM "LINUX_PLATFORM")
+else()
+    message(FATAL_ERROR "Unsupported system: ${CMAKE_SYSTEM_NAME}")
+endif()
+
+
 option(BUILD_TESTS ON)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/include/CMakeLists.txt)
@@ -39,16 +48,25 @@ target_link_libraries(KCore
     KCore-set-app-flags
     stdc++
     ${CMAKE_DL_LIBS}
-    ${CURL_LIB_FILE}
-    ssl #TODO curl dependency. enable it in external cmake.
-    crypto #TODO curl dependency. enable it in external cmake.
-    z #TODO curl dependency. enable it in external cmake.
+    # ${CURL_LIB_FILE}
+    # ssl #TODO curl dependency. enable it in external cmake.
+    # crypto #TODO curl dependency. enable it in external cmake.
+    # z #TODO curl dependency. enable it in external cmake.
 )
 target_compile_definitions(KCore PUBLIC  
     #disable debug optimization seems that not work in this way 
     -DCMAKE_CXX_FLAGS_DEBUG=-O0
     -DBACKWARD_HAS_UNWIND=1
+    -D${PLATFORM}
 )
+
+if(${PLATFORM} MATCHES "WINDOWS_PLATFORM")
+    target_compile_definitions(KCore PUBLIC  
+    )
+    target_link_libraries(KCore
+        ws2_32 
+    )
+endif()
 
 if(${BUILD_TESTS})
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests ${CMAKE_CURRENT_BINARY_DIR}/tests)
