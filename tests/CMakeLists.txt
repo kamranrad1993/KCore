@@ -22,6 +22,13 @@ function(build_test name)
         #disable debug optimization seems that not work in this way 
         -DCMAKE_CXX_FLAGS_DEBUG=-O0
     )
+
+    if(${PLATFORM} MATCHES "WINDOWS_PLATFORM")
+        target_compile_definitions(${name} PUBLIC  
+            -D_GLIBCXX_HAS_GTHREADS
+            -D_GLIBCXX_USE_C99_STDINT_TR1
+        )
+    endif()
     
     #disable debug optimization
     #https://devzone.nordicsemi.com/f/nordic-q-a/77780/disable-optimization-of-part-of-the-code-through-cmake

@@ -2,7 +2,6 @@
 #include <debuging/call_stace_trace.h>
 #include <debuging/logging.h>
 #include <debuging/signal_handler.h>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <networking/socket/socket.h>
@@ -16,8 +15,8 @@ int main(int argc, char **argv)
 {
     REGISTER_ALL_SIGNAL_TRACE_BACK();
     // Socket s("www.google.com", 80);
-    Socket s("localhost", 65432);
-    // Socket s("127.0.0.1", 65432);
+    // Socket s("localhost", 65432);
+    Socket s("127.0.0.1", 65432);
     s.on_receive = [](void *data, size_t len)
     {
         LOG(len, "  ", (char *)data);
