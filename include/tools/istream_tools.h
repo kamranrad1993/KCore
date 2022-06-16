@@ -3,6 +3,8 @@
 #include <iterator>
 #include <sstream>
 #include <vector>
+#include <sys/types.h>
+#include <base/types.h>
 
 namespace KCore
 {

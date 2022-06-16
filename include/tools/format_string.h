@@ -9,9 +9,9 @@ namespace KCore
     using namespace std;
 
     // https://stackoverflow.com/a/49812018/4760642
+#ifdef LINUX_PLATFORM
     const string vformat(const char *const zcFormat, ...)
     {
-
         // initialize use of the variable argument array
         va_list vaArgs;
         va_start(vaArgs, zcFormat);
@@ -31,4 +31,18 @@ namespace KCore
         va_end(vaArgs);
         return string(zc.data(), iLen);
     }
+#endif
+
+#ifdef WINDOWS_PLATFORM
+        template<typename... Args>
+        std::string vformat(const char* zcFormat, Args... args)
+        {
+            size_t size = snprintf(nullptr, 0, zcFormat, args...);
+            std::string buf;
+            buf.reserve(size + 1);
+            buf.resize(size);
+            snprintf(&buf[0], size + 1, zcFormat, args...);
+            return buf;
+        }
+#endif
 }
