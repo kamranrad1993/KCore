@@ -11,17 +11,17 @@
 #include <thread>
 #include <vector>
 #ifdef LINUX_PLATFORM
-#include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 #endif
 #ifdef WINDOWS_PLATFORM
+#include <iphlpapi.h>
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <iphlpapi.h>
 #endif
 namespace KCore
 {
@@ -119,26 +119,26 @@ namespace KCore
             WSADATA wsaData;
             int result;
             result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-            if(result != 0)
+            if (result != 0)
             {
                 LOG_ERROR_EXIT(5, result, "WSAStartup failed with error: ", result);
             }
 
             struct addrinfo *addr_result = NULL, hints;
 
-            ZeroMemory( &hints, sizeof(hints) );
+            ZeroMemory(&hints, sizeof(hints));
             hints.ai_family = AF_UNSPEC;
             hints.ai_socktype = SOCK_STREAM;
             hints.ai_protocol = IPPROTO_TCP;
 
             result = getaddrinfo(address, to_string(port).c_str(), &hints, &addr_result);
-            if(result != 0)
+            if (result != 0)
             {
                 LOG_ERROR_EXIT(5, result, "getaddrinfo failed with error: ", result);
             }
             serv_addrs.push_back(*addr_result);
             socket_instance = socket(addr_result->ai_family, addr_result->ai_socktype, addr_result->ai_protocol);
-            if(socket_instance == INVALID_SOCKET)
+            if (socket_instance == INVALID_SOCKET)
             {
                 LOG_ERROR_EXIT(5, WSAGetLastError(), "socket failed with error: ", WSAGetLastError());
             }
@@ -179,28 +179,24 @@ namespace KCore
         future<int> async_connect()
         {
             future<int> fobj = async(launch::async, [this]()
-                                     {
-                                         return this->connect();
-                                     });
+                                     { return this->connect(); });
             return fobj;
         }
 
         void send(void *data, size_t len)
         {
-            #ifdef LINUX_PLATFORM
+#ifdef LINUX_PLATFORM
             ::send(socket_instance, data, len, 0);
-            #endif
-            #ifdef WINDOWS_PLATFORM
+#endif
+#ifdef WINDOWS_PLATFORM
             ::send(socket_instance, (char *)data, len, 0);
-            #endif
+#endif
         }
 
         future<void> async_send(void *data, size_t len)
         {
             future<void> fobj = async(launch::async, [this, data, len]()
-                                      {
-                                          this->send(data, len);
-                                      });
+                                      { this->send(data, len); });
             return fobj;
         }
 
@@ -212,19 +208,17 @@ namespace KCore
         future<void> async_disconnect()
         {
             future<void> fobj = async(launch::async, [this]()
-            {
-                this->disconnect();
-            });
+                                      { this->disconnect(); });
         }
 
         ~Socket()
         {
             loop_condition = false;
-            // if(loop_thread != nullptr && loop_thread->joinable())
-            // {
-            //     loop_thread->detach();
-            //     delete loop_thread;
-            // }
+            if (loop_thread != NULL && loop_thread != nullptr && loop_thread->joinable())
+            {
+                loop_thread->detach();
+                delete loop_thread;
+            }
         }
     };
 } // namespace KCore
