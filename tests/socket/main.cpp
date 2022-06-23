@@ -29,6 +29,8 @@ int main(int argc, char **argv)
     if (connection_result < 0)
     {
         delete s;
+        LOG("cant connect: ", connection_result);
+
         return connection_result;
     }
 

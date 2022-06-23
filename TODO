@@ -9,10 +9,17 @@
     ☐ ipv6 support
     ✔ Async @done(22-06-14 22:39)
     ✔ loop thread may not kill. must review @done(22-06-18 20:53)
+    ☐ create socket packet detection rule. it may be constructed with fixed size template type that read on data available.
+        at least it contains packet length.
+
+☐ use my own socket connection for http requests
     
 ☐ create file system
 
 ☐ create Stacktrace 
     ✔ for linux @done(22-06-12 23:02)
     ☐ for windows
+    ☐ try to create crossplatform stacktrace using general compiler like gcc
+
+☐ create core dumper
 

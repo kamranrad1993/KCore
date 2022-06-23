@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 
 
 project(KCore)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 # list(APPEND ${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} "-rdynamic") 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3")
 
