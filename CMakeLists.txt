@@ -64,7 +64,8 @@ if(${PLATFORM} MATCHES "WINDOWS_PLATFORM")
     target_compile_definitions(KCore PUBLIC  
     )
     target_link_libraries(KCore
-        ws2_32 
+        ws2_32
+        DbgHelp
     )
 endif()
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <debuging/logging.h>
 #include <iostream>
 #include <string.h>
 #include <errno.h>
@@ -16,7 +17,19 @@
 #endif
 #ifdef WINDOWS_PLATFORM
 #include <windows.h>
+#include <dbghelp.h>
+#include <mutex>
 #endif
+
+// #ifdef WINDOWS_PLATFORM
+// #define _INITIALIZE_SYM()\
+//     ::SymSetOptions( SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME );\
+//     ::SymInitialize( ::GetCurrentProcess(), "http://msdl.microsoft.com/download/symbols", TRUE );
+// #ifndef _INITIALIZE_SYM_CALLED
+// #define _INITIALIZE_SYM_CALLED
+//     _INITIALIZE_SYM();
+// #endif
+// #endif
 
 namespace KCore
 {
@@ -63,6 +76,16 @@ namespace KCore
 #endif
     }
 
+#ifdef WINDOWS_PLATFORM
+    once_flag _initialize_sysm_once;
+    void _initialize_sym()
+    {
+        ::SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME);
+        bool result = ::SymInitialize(::GetCurrentProcess(), "http://msdl.microsoft.com/download/symbols", TRUE);
+        // cout << "initialize sysmbol server " << result << endl;
+    }
+#endif
+
     // https://stackoverflow.com/a/63856113/4760642
     void printCallStack(int depth)
     {
@@ -84,7 +107,30 @@ namespace KCore
             }
         }
 #elif WINDOWS_PLATFORM
+        call_once(_initialize_sysm_once, _initialize_sym);
 
+        PVOID callstack[depth] = {0};
+        int frames = (int)CaptureStackBackTrace(1, depth, callstack, NULL);
+        // SymInitialize(GetCurrentProcess(), NULL, TRUE);
+        for (int i = 0; i < frames; i++)
+        {
+            // cout << (char *)callstack[i] << endl;
+            ULONG64 buffer[(sizeof(SYMBOL_INFO) + 1024 + sizeof(ULONG64) - 1) / sizeof(ULONG64)] = {0};
+            SYMBOL_INFO *info = (SYMBOL_INFO *)buffer;
+            info->SizeOfStruct = sizeof(SYMBOL_INFO);
+            info->MaxNameLen = 1024;
+
+            // // Attempt to get information about the symbol and add it to our output parameter.
+            DWORD64 displacement = 0;
+            if (::SymFromAddr(::GetCurrentProcess(), (DWORD64)callstack[i], &displacement, info))
+            {
+                cout << info->Name << info->NameLen << endl;
+            }
+            else
+            {
+                cout << "cant calculate stack trace" << endl;
+            }
+        }
 #endif
     }
 
