@@ -1,6 +1,5 @@
 #pragma once
 
-#include <debuging/logging.h>
 #include <iostream>
 #include <string.h>
 #include <errno.h>
@@ -19,6 +18,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <mutex>
+#include <dbg
 #endif
 
 // #ifdef WINDOWS_PLATFORM
@@ -80,15 +80,16 @@ namespace KCore
     once_flag _initialize_sysm_once;
     void _initialize_sym()
     {
-        ::SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME);
+        ::SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME);
         bool result = ::SymInitialize(::GetCurrentProcess(), "http://msdl.microsoft.com/download/symbols", TRUE);
         // cout << "initialize sysmbol server " << result << endl;
     }
 #endif
 
     // https://stackoverflow.com/a/63856113/4760642
-    void printCallStack(int depth)
-    {
+    string get_call_stack(int depth)
+    {        
+        string call_stack;
 #ifdef LINUX_PLATFORM
         void *callstack[depth];
         int frame_count = backtrace(callstack, sizeof(callstack) / sizeof(callstack[0]));
@@ -103,7 +104,9 @@ namespace KCore
                 VMA_addr -= 1; // https://stackoverflow.com/questions/11579509/wrong-line-numbers-from-addr2line/63841497#63841497
                 string cmd = vformat("addr2line -e %s -Cifp %zx", info.dli_fname, VMA_addr);
                 string result = sh(cmd);
-                cout << result << endl;
+                call_stack.append(result);
+                call_stack.append("\n");
+                // cout << result << endl;
             }
         }
 #elif WINDOWS_PLATFORM
@@ -112,8 +115,10 @@ namespace KCore
         PVOID callstack[depth] = {0};
         int frames = (int)CaptureStackBackTrace(1, depth, callstack, NULL);
         // SymInitialize(GetCurrentProcess(), NULL, TRUE);
+        cout << "current process : " << GetCurrentProcess() << "id : " << GetCurrentProcessId() << endl;
         for (int i = 0; i < frames; i++)
         {
+            // https://github.com/rioki/rex/blob/master/rex/dbg.h#L100
             // cout << (char *)callstack[i] << endl;
             ULONG64 buffer[(sizeof(SYMBOL_INFO) + 1024 + sizeof(ULONG64) - 1) / sizeof(ULONG64)] = {0};
             SYMBOL_INFO *info = (SYMBOL_INFO *)buffer;
@@ -122,9 +127,13 @@ namespace KCore
 
             // // Attempt to get information about the symbol and add it to our output parameter.
             DWORD64 displacement = 0;
-            if (::SymFromAddr(::GetCurrentProcess(), (DWORD64)callstack[i], &displacement, info))
+            // cout<<SymFromAddr(GetCurrentProcess(), (DWORD64)callstack[i], &displacement, info)<<endl;
+            if (SymFromAddr(GetCurrentProcess(), (DWORD64)callstack[i], &displacement, info))
             {
-                cout << info->Name << info->NameLen << endl;
+                // cout << info->Name << info->NameLen << endl;
+                call_stack.append(info->Name);
+                call_stack.append(to_string(info->NameLen));
+                call_stack.append("\n");
             }
             else
             {
@@ -132,6 +141,7 @@ namespace KCore
             }
         }
 #endif
+        return call_stack;
     }
 
 }

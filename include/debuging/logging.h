@@ -103,7 +103,7 @@ namespace KCore
 
 #define _LOG_BACK_TRACE(depth)                            \
     cout << ANSI_BACK_COLOR_BLACK << ANSI_FOR_COLOR_BLUE; \
-    printCallStack(depth);                                \
+    cout << get_call_stack(depth);                                \
     _COLOR_RESET();
 
 #define LOG(...) \

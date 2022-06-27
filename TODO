@@ -16,12 +16,13 @@
     
 ☐ create file system
 
-☐ create Stacktrace 
+☐ create Stacktrace and logging
     ✔ for linux @done(22-06-12 23:02)
     ☐ for windows
         ☐ find out how can i get true process address
     ☐ try to create crossplatform stacktrace using general compiler like gcc
     ☐ read about jit debuggers
+    ☐ rotate logs to another output
 
 ☐ create core dumper
 

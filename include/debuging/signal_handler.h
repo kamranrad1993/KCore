@@ -9,7 +9,7 @@ namespace KCore
     inline void traceBackSignalHandler(int signum)
     {
         LOG("Caught Signal : " + to_string(signum));
-        printCallStack(16);
+        LOG(get_call_stack(16));
         exit(signum);
     }
 
