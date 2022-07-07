@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     // REGISTER_ALL_SIGNAL_TRACE_BACK();
     // Socket s("www.google.com", 80);
     // Socket s("localhost", 65432);
-    Socket *s = new Socket("127.0.0.1", 65432);
+    Socket *s = new Socket("127.0.0.1", 8000);
     s->on_receive = [](void *data, size_t len)
     {
         LOG(len, "  ", (char *)data);
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     if (connection_result < 0)
     {
         delete s;
-        LOG("cant connect: ", connection_result);
+        // LOG_ERROR_EXIT(5, 1, "cant connect: ", connection_result);
 
         return connection_result;
     }

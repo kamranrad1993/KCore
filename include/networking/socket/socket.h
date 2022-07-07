@@ -7,8 +7,10 @@
 #include <cstring>
 #include <debuging/logging.h>
 #include <future>
+#include <mutex>
 #include <stdlib.h>
 #include <thread>
+#include <tools/streambuf.h>
 #include <vector>
 #ifdef LINUX_PLATFORM
 #include <arpa/inet.h>
@@ -27,64 +29,20 @@ namespace KCore
 {
     using namespace std;
 
-    //https://www.ibm.com/docs/en/zos/2.5.0?topic=services-network-application-example
+    // https://www.ibm.com/docs/en/zos/2.5.0?topic=services-network-application-example
     class Socket
     {
     private:
-        size_t buffer_size = 256;
 #ifdef LINUX_PLATFORM
-        vector<uint8_t> buffer;
         vector<sockaddr_in> serv_addrs;
         int socket_instance;
 #endif
 #ifdef WINDOWS_PLATFORM
-        vector<char> buffer;
         vector<addrinfo> serv_addrs;
         SOCKET socket_instance = INVALID_SOCKET;
 #endif
-        bool loop_condition = false;
-        thread *loop_thread;
-
     public:
-        function<void()> on_connect;
-        function<void(int)> on_disconnect;
-        function<void(void *, size_t)> on_receive;
-
-    private:
-        void loop()
-        {
-            loop_condition = true;
-            vector<uint8_t> data;
-            while (loop_condition)
-            {
-                size_t len = recv(socket_instance, buffer.data(), buffer_size, 0);
-                if (len > 0 && len < buffer_size)
-                {
-                    data.reserve(data.size() + len);
-                    data.insert(data.end(), buffer.begin(), buffer.begin() + len);
-                    void *result = malloc(data.size());
-                    memcpy(result, data.data(), data.size());
-                    on_receive(result, data.size());
-                    data.clear();
-                    data.shrink_to_fit();
-                    buffer.clear();
-                }
-                else if (len == buffer_size)
-                {
-                    data.reserve(data.size() + buffer_size);
-                    data.insert(data.end(), buffer.begin(), buffer.begin() + len);
-                }
-                else
-                {
-                    data.clear();
-                    data.shrink_to_fit();
-                    buffer.clear();
-                    if (on_disconnect)
-                        on_disconnect(0);
-                    loop_condition = false;
-                }
-            }
-        }
+        size_t buffer_size = 256;
 
     public:
         Socket(string address, uint16_t port)
@@ -95,7 +53,6 @@ namespace KCore
         Socket(const char *address, int len, uint16_t port)
         {
 #ifdef LINUX_PLATFORM
-            buffer = vector<uint8_t>(buffer_size, 0);
             socket_instance = socket(AF_INET, SOCK_STREAM, 0);
             hostent *host = gethostbyname(address);
 
@@ -153,9 +110,6 @@ namespace KCore
                 int result = ::connect(socket_instance, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
                 if (result >= 0)
                 {
-                    LOG(serv_addr.sin_addr.s_addr);
-                    loop_thread = new thread([this]()
-                                             { this->loop(); });
                     return result;
                 }
             }
@@ -200,6 +154,41 @@ namespace KCore
             return fobj;
         }
 
+        shared_ptr<streambuf> receive()
+        {
+            // int available = 0;
+            // socklen_t available_len = sizeof(available);
+            // int err = ioctl(socket_instance, FIONREAD, &available);
+            // if (err < 0)
+            // // int err = getsockopt(socket_instance,SOL_SOCKET, FIONREAD, &available, &available_len);
+            // // if (err < 0)
+            // {
+            //     LOG_ERROR_EXIT(5, 1, "Connection Lost");
+            // }
+
+            // sleep(1);
+            // if (available < 1)
+            // {
+            //     return shared_ptr<uint8_t>(nullptr);
+            // }
+
+            streambuf *result_buf = new streambuf(buffer_size, buffer_size);
+            iostream result_stream(result_buf);
+            streambuf buf(buffer_size);
+
+            int available = recv(socket_instance, buf.get_pptr(), buffer_size, MSG_PEEK);
+
+            while (available > 0)
+            {
+                available = recv(socket_instance, buf.get_pptr(), available, 0);
+                result_stream.write(buf.get_gptr(), available);
+                buf.clear();
+            }
+
+            shared_ptr<streambuf> result(result_buf);
+            return result;
+        }
+
         void disconnect()
         {
             ::close(socket_instance);
@@ -213,12 +202,6 @@ namespace KCore
 
         ~Socket()
         {
-            loop_condition = false;
-            if (loop_thread != NULL && loop_thread != nullptr && loop_thread->joinable())
-            {
-                loop_thread->detach();
-                delete loop_thread;
-            }
         }
     };
 } // namespace KCore

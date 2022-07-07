@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.2)
+# cmake_policy(SET CMP0069 NEW) 
+# set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+# include(CheckIPOSupported)
+# check_ipo_supported(RESULT supported OUTPUT error)
 
 set(CMAKE_CXX_STANDARD 17)
 # list(APPEND ${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} "-rdynamic") 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+
 
 function(build_test name)
     message(STATUS "Build Test : " ${name})
@@ -35,6 +40,13 @@ function(build_test name)
     add_library(${name}set-app-flags INTERFACE)
     target_compile_options(${name}set-app-flags INTERFACE -O0)
     target_link_libraries(${name} PRIVATE ${name}set-app-flags KCore ${CMAKE_DL_LIBS})
+
+    # if( supported )
+    #     message(STATUS "IPO / LTO enabled")
+    #     set_property(TARGET ${name} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    # else()
+    #     message(STATUS "IPO / LTO not supported: <${error}>")
+    # endif()
     
 endfunction()
 

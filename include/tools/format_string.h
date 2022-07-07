@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+ #include <cstdarg>
 
 namespace KCore
 {

@@ -10,6 +10,7 @@
 #include <tools/format_string.h>
 #include <tools/istream_tools.h>
 #include <vector>
+#include <strstream>
 // #include <stdio.h>
 // #include <istream>
 // #include <streambuf>
@@ -221,6 +222,7 @@ namespace KCore
     struct RequestAddress
     {
         string host;
+        uint16_t port;
         string path;
 
         friend ostream &operator<<(ostream &out, const RequestAddress &instance)
@@ -299,6 +301,17 @@ namespace KCore
             out << END_LINE;
             return out;
         }
+
+        // shared_ptr<void*>getDataPtr(size_t& length)
+        // {
+        //     strstreambuf buf();
+        //     for(RequestHeader header: this->headers)
+        //     {
+        //         buf << header << END_LINE;
+        //     }
+        //     buf << END_LINE;
+        //     // return make_shared(str.rdbuf());
+        // }
     };
 
 }

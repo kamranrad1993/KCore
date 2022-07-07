@@ -20,7 +20,7 @@ void f1()
 
 int main(int argc, char **argv)
 {
-    REGISTER_ALL_SIGNAL_TRACE_BACK();
+    // REGISTER_ALL_SIGNAL_TRACE_BACK();
     ASSERT(false, "Assert Test 1");
     ASSERT(true, "Assert Test 1");
 

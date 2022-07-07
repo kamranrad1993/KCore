@@ -3,7 +3,7 @@
     ✔ create a fork for each cnnection @done(22-06-12 23:01)
     ✔ using socket.h for linux @done(22-06-12 23:03)
     ✔ DNS query @done(22-06-14 00:13)
-    ☐ using winsock for windows
+    ✔ using winsock for windows @done(22-06-29 12:33)
     ☐ TLS socket
     ☐ websocket
     ☐ ipv6 support

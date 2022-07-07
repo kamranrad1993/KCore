@@ -1,24 +1,23 @@
 #pragma once
 
-#include <iostream>
-#include <string.h>
+#include <array>
 #include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include <iostream>
 #include <regex>
-#include <vector>
-// #include <backward.hpp>
+#include <stdlib.h>
+#include <string.h>
 #include <tools/format_string.h>
+#include <unistd.h>
+#include <vector>
 #ifdef LINUX_PLATFORM
 #include <execinfo.h>
-#include <zconf.h>
 #include <link.h>
+#include <zconf.h>
 #endif
 #ifdef WINDOWS_PLATFORM
-#include <windows.h>
 #include <dbghelp.h>
 #include <mutex>
-#include <dbg
+#include <windows.h>
 #endif
 
 // #ifdef WINDOWS_PLATFORM
@@ -59,9 +58,8 @@ namespace KCore
             }
         }
         return result;
-#elif WINDOWS_PLATFORM
-
 #endif
+        return "";
     }
 
     size_t convertToVMA(size_t addr)
@@ -88,7 +86,7 @@ namespace KCore
 
     // https://stackoverflow.com/a/63856113/4760642
     string get_call_stack(int depth)
-    {        
+    {
         string call_stack;
 #ifdef LINUX_PLATFORM
         void *callstack[depth];

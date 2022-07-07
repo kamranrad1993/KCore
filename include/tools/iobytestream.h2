@@ -1,0 +1,26 @@
+#pragma once
+
+#include <iostream>
+#include <vector>
+#include <iosfwd>
+
+namespace KCore
+{
+    using namespace std;
+    class iobytestream : public basic_iostream
+    {
+    private:
+        vector<char> buf;
+
+    public:
+        iobytestream(size_t length)
+        {
+            buf = vector<char>(length);
+        }
+
+        iobytestream(void *ptr, size_t length)
+        {
+        }
+    }
+
+} //namespace KCore
