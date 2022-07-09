@@ -5,3 +5,6 @@ external/backward*
 external/curl*
 .vscode
 CMakeLists.txt.user
+.kdev4/KCore.kdev4
+.gitignore
+KCore.kdev4

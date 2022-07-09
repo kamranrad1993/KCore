@@ -8,10 +8,10 @@ namespace KCore
 {
     using namespace std;
 
-#define SPACE           ' '
+#define SPACE           " "
 #define END_LINE        "\r\n"
 #define END_HEADER      "\r\n\r\n"
-#define COLON           ':'
+#define COLON           ":"
 #define COLON_SPACE     ": "
 
     struct HttpVersion

@@ -54,7 +54,7 @@ namespace KCore
                 LOG_ERROR_EXIT(5, 1, "connect error");
             }
 
-            KCore::streambuf req_buf(128,128);
+            KCore::streambuf req_buf;
             iostream req_stream(&req_buf);
             req_stream<<request;
 

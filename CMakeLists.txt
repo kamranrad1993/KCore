@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.2)
+# cmake_policy(SET CMP0069 NEW) 
+# set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+# include(CheckIPOSupported)
+# check_ipo_supported(RESULT supported OUTPUT error)
 
 
 project(KCore)
 set(CMAKE_CXX_STANDARD 20)
 # list(APPEND ${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} "-rdynamic") 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(PLATFORM "WINDOWS_PLATFORM")
@@ -68,6 +73,14 @@ if(${PLATFORM} MATCHES "WINDOWS_PLATFORM")
         DbgHelp
     )
 endif()
+
+# if( supported )
+#     message(STATUS "IPO / LTO enabled")
+#     set_property(TARGET KCore PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+# else()
+#     message(STATUS "IPO / LTO not supported: <${error}>")
+# endif()
+
 
 if(${BUILD_TESTS})
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests ${CMAKE_CURRENT_BINARY_DIR}/tests)

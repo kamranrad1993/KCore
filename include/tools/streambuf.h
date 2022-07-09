@@ -12,17 +12,16 @@ namespace KCore
     class streambuf : public std::streambuf
     {
     private:
-        vector<char_type> buf;
-        size_t increase_length_step;
-        size_t initial_size;
+        char_type *buf = nullptr;
+        size_t current_pptr = 0;
+        size_t current_gptr = 0;
 
     protected:
         int_type underflow() override
         {
-            LOG("underflow");
             if (gptr() < pptr())
             {
-                setg((char_type *)buf.data(), gptr(), pptr());
+                setg(buf, gptr(), pptr());
                 return traits_type::to_int_type(*gptr());
             }
             else
@@ -37,19 +36,7 @@ namespace KCore
             {
                 if (pptr() == epptr())
                 {
-                    size_t old_size = buf.size();
-                    size_t new_size = buf.size() + increase_length_step;
-                    buf.resize(new_size);
-                    size_t from = (size_t)(&buf[0] + old_size + 1);
-                    size_t to = (size_t)(&buf[0] + new_size);
-                    LOG("from ", from, " to ", to, " diff ", to - from);
-                    from = (size_t)pptr() + 1;
-                    to = (size_t)pptr() + increase_length_step;
-                    LOG("#from ", from, " to ", to, " diff ", to - from);
-                    setp((char_type *)(&buf[0] + old_size + 1), (char_type *)(&buf[0] + new_size));
-                    // setp(get_pptr() + 1, get_pptr() + increase_length_step);
-                    // setg(get_gptr(), get_gptr(), (char_type *)(buf.data() + buf.size()));
-                    // return traits_type::eof();
+                    return traits_type::eof();
                 }
 
                 *pptr() = traits_type::to_char_type(c);
@@ -60,26 +47,53 @@ namespace KCore
             return traits_type::not_eof(c);
         }
 
-    public:
-        streambuf(size_t length, size_t increase_length_step = 128)
+        streamsize xsputn(const char_type *s, streamsize n) override
         {
-            initial_size = length;
-            this->increase_length_step = increase_length_step;
-            buf = vector<char_type>(length);
-            setg((char_type *)buf.data(), (char_type *)buf.data(), (char_type *)buf.data() + length);
-            setp((char_type *)buf.data(), (char_type *)buf.data() + length);
+            if (buf == nullptr)
+            {
+                buf = (char_type *)malloc(n + 2);
+            }
+            else
+            {
+                void *new_buf = malloc(current_pptr + n + 1);
+                memcpy(new_buf, buf, current_pptr);
+                delete buf;
+                buf = (char_type *)new_buf;
+            }
+
+            memcpy((void *)(buf + current_pptr), s, n);
+            current_pptr += n;
+            setp(buf, buf + current_pptr);
+            setg(buf, buf, buf + current_pptr);
+
+            return n;
         }
 
-        streambuf(void *ptr, size_t length, size_t increase_length_step = 128)
-            : streambuf(length, increase_length_step)
+    public:
+        streambuf()
         {
-            // buf.resize(length);
-            memcpy(buf.data(), ptr, length);
+        }
+
+        streambuf(size_t length) //TODO may be wrong . must keep length
+        {
+            buf = (char_type *)malloc(length + 2);
+            current_pptr = 0;
+            setp(buf, buf + current_pptr);
+            setg(buf, buf, buf + current_pptr);
+        }
+
+        streambuf(void *ptr, size_t length)
+        {
+            buf = (char_type *)malloc(length + 2);
+            memcpy(buf, ptr, length);
+            current_pptr = length + 1;
+            setp(buf, buf + current_pptr);
+            setg(buf, buf, buf + current_pptr);
         }
 
         char_type *get_pptr()
         {
-            return (char_type *)pptr();
+            return (char_type *)(buf + current_pptr);
         }
 
         char_type *get_gptr()
@@ -89,15 +103,12 @@ namespace KCore
 
         size_t get_length()
         {
-            return buf.size();
+            return current_pptr;
         }
 
         void clear()
         {
-            buf.clear();
-            buf.resize(initial_size);
-            setg((char_type *)buf.data(), (char_type *)buf.data(), (char_type *)buf.data() + initial_size);
-            setp((char_type *)buf.data(), (char_type *)buf.data() + initial_size);
+            current_pptr = 0;
         }
     };
 

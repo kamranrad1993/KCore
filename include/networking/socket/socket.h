@@ -172,16 +172,17 @@ namespace KCore
             //     return shared_ptr<uint8_t>(nullptr);
             // }
 
-            streambuf *result_buf = new streambuf(buffer_size, buffer_size);
+            streambuf *result_buf = new streambuf();
             iostream result_stream(result_buf);
             streambuf buf(buffer_size);
 
             int available = recv(socket_instance, buf.get_pptr(), buffer_size, MSG_PEEK);
-
             while (available > 0)
             {
                 available = recv(socket_instance, buf.get_pptr(), available, 0);
                 result_stream.write(buf.get_gptr(), available);
+                // string s(buf.get_gptr(), buf.get_length());
+                // LOG(s);
                 buf.clear();
             }
 
