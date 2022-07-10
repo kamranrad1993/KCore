@@ -11,10 +11,6 @@
 #include <tools/istream_tools.h>
 #include <vector>
 #include <strstream>
-// #include <stdio.h>
-// #include <istream>
-// #include <streambuf>
-// #include <iostream>
 
 namespace KCore
 {

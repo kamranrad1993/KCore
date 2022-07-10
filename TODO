@@ -12,7 +12,7 @@
     ☐ create socket packet detection rule. it may be constructed with fixed size template type that read on data available.
         at least it contains packet length.
 
-☐ use my own socket connection for http requests
+✔ use my own socket connection for http requests @done(22-07-10 10:16)
     
 ☐ create file system
 

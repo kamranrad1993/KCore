@@ -156,22 +156,6 @@ namespace KCore
 
         shared_ptr<streambuf> receive()
         {
-            // int available = 0;
-            // socklen_t available_len = sizeof(available);
-            // int err = ioctl(socket_instance, FIONREAD, &available);
-            // if (err < 0)
-            // // int err = getsockopt(socket_instance,SOL_SOCKET, FIONREAD, &available, &available_len);
-            // // if (err < 0)
-            // {
-            //     LOG_ERROR_EXIT(5, 1, "Connection Lost");
-            // }
-
-            // sleep(1);
-            // if (available < 1)
-            // {
-            //     return shared_ptr<uint8_t>(nullptr);
-            // }
-
             streambuf *result_buf = new streambuf();
             iostream result_stream(result_buf);
             streambuf buf(buffer_size);
@@ -190,6 +174,13 @@ namespace KCore
             return result;
         }
 
+        future<shared_ptr<streambuf>> async_receive()
+        {
+            future<shared_ptr<streambuf>> fobj = async(launch::async, [this]()
+                                                       { return this->receive(); });
+            return fobj;
+        }
+
         void disconnect()
         {
             ::close(socket_instance);
@@ -199,6 +190,7 @@ namespace KCore
         {
             future<void> fobj = async(launch::async, [this]()
                                       { this->disconnect(); });
+            return fobj;
         }
 
         ~Socket()
