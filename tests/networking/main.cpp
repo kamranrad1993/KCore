@@ -17,7 +17,7 @@ using namespace KCore;
 
 int main(int argc, char **argv)
 {
-    REGISTER_ALL_SIGNAL_TRACE_BACK();
+    // REGISTER_ALL_SIGNAL_TRACE_BACK();
 
     SimpleHttpRequest srq;
     // RequestAddress add = {"1906714720.rsc.cdn77.org", "img/cdn77-test-563kb.jpg"};
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     // RequestAddress add = {"google.com", 80, "/"};
     RequestDefinition requestDefinition(REQUEST_METHOD_GET, "/Downloads/", HTTP_VERSION_1_1);
     HttpRequest req(requestDefinition, add);
-    shared_ptr<KCore::streambuf> result = srq.send(add, req);
+    shared_ptr<HttpResponse> result = srq.send(add, req);
     LOG(result);
 
     return 0;

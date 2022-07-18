@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <tools/streambuf.h>
+#include <tools/memory_streambuf.h>
 #include <vector>
 #ifdef LINUX_PLATFORM
 #include <arpa/inet.h>

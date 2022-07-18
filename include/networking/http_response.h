@@ -242,7 +242,8 @@ namespace KCore
 
         friend istream &operator>>(istream &in, ResponseStatus &instance)
         {
-            in >> instance.httpVersion >> instance.responseCode;
+            in >> instance.httpVersion;
+            in >> instance.responseCode;
             return in;
         }
     };
@@ -302,7 +303,7 @@ namespace KCore
             if (contentLengthItr != instance.headers.end())
             {
                 ResponseContentLength *contentLength = reinterpret_cast<ResponseContentLength *>(&contentLengthItr->second);
-                instance.contentStream = IStreamSplitter::subStream(in, in.tellg(), contentLength->getValue()+1);
+                instance.contentStream = IStreamSplitter::subStream(in, in.tellg(), contentLength->getValue() + 1);
             }
 
             return in;

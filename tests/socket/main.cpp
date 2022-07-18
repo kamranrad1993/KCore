@@ -17,14 +17,6 @@ int main(int argc, char **argv)
     // Socket s("www.google.com", 80);
     // Socket s("localhost", 65432);
     Socket *s = new Socket("127.0.0.1", 8000);
-    s->on_receive = [](void *data, size_t len)
-    {
-        LOG(len, "  ", (char *)data);
-    };
-    s->on_disconnect = [](int code)
-    {
-        LOG("disconnected ", code);
-    };
     int connection_result = s->connect();
     if (connection_result < 0)
     {

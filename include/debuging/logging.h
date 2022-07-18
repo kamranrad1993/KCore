@@ -83,14 +83,14 @@ namespace KCore
     template <typename T>
     std::ostream &operator,(std::ostream &out, const T &t)
     {
-        out << t;
+        out << t << SPACE;
         return out;
     }
 
     //overloaded version to handle all those special std::endl and others...
     std::ostream &operator,(std::ostream &out, std::ostream &(*f)(std::ostream &))
     {
-        out << f;
+        out << f << SPACE;
         return out;
     }
 
@@ -112,14 +112,14 @@ namespace KCore
 #define LOG_WARNING(...) \
     _LOG_NEW_LINE(ANSI_BACK_COLOR_BLACK, ANSI_FOR_COLOR_YELLOW, __VA_ARGS__);
 
-#define LOG_TRACE(...)                                                    \
-    _LOG(ANSI_BACK_COLOR_BLACK, ANSI_FOR_COLOR_WHITE, __VA_ARGS__, SPACE); \
-    _LOG_TRACE();                                                         \
+#define LOG_TRACE(...)                                                      \
+    _LOG(ANSI_BACK_COLOR_BLACK, ANSI_FOR_COLOR_WHITE, __VA_ARGS__, SPACE);  \
+    _LOG_BACK_TRACE(5);                                                     \
     cout << NEW_LINE;
 
-#define LOG_WARNING_TRACE(...)                                             \
+#define LOG_WARNING_TRACE(...)                                              \
     _LOG(ANSI_BACK_COLOR_BLACK, ANSI_FOR_COLOR_YELLOW, __VA_ARGS__, SPACE); \
-    _LOG_TRACE();                                                          \
+    _LOG_TRACE();                                                           \
     cout << NEW_LINE;
 
 #define LOG_ERROR(...) \
