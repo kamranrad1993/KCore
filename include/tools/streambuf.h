@@ -19,7 +19,6 @@ namespace KCore
         size_t current_size = 0;
 
     protected:
-
         streambuf *setbuf(char *s, streamsize n) override
         {
             buf = (char_type *)malloc(n + 2);
@@ -35,7 +34,31 @@ namespace KCore
         streampos seekoff(streamoff off, ios_base::seekdir way,
                           ios_base::openmode which = ios_base::in | ios_base::out) override
         {
-            LOG_TRACE("seekoff");
+
+            string str_way = "cur";
+            string str_which = "cur";
+            switch (way)
+            {
+            case ios_base::cur:
+                str_way = "cur";
+                break;
+            case ios_base::beg:
+                str_way = "beg";
+                break;
+            case ios_base::end:
+                str_way = "end";
+                break;
+            }
+            if (which & ios_base::in)
+            {
+                str_which = "in";
+            }
+            else if (which & ios_base::out)
+            {
+                str_which = "out";
+            }
+            LOG("seekoff", off, str_way, str_which);
+
             if (which & ios_base::in && which & ios_base::out)
             {
                 throw std::runtime_error("streambuf::seekoff: invalid openmode");
@@ -46,17 +69,17 @@ namespace KCore
             case ios_base::cur:
                 if (which & ios_base::in)
                 {
-                    current_pptr += off;
-                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
-                    setp(buf + current_pptr, buf + current_size - 1);
-                    return streampos(current_pptr);
-                }
-                else if (which & ios_base::out)
-                {
                     current_gptr += off;
                     current_gptr = clamp<size_t>(current_gptr, 0, current_size - 1);
                     setg(buf, buf + current_gptr, buf + current_pptr);
                     return streampos(current_gptr);
+                }
+                else if (which & ios_base::out)
+                {
+                    current_pptr += off;
+                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
+                    setp(buf + current_pptr, buf + current_size - 1);
+                    return streampos(current_pptr);
                 }
                 else
                 {
@@ -66,17 +89,17 @@ namespace KCore
             case ios_base::beg:
                 if (which & ios_base::in)
                 {
-                    current_pptr = off;
-                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
-                    setp(buf + current_pptr, buf + current_size - 1);
-                    return streampos(current_pptr);
-                }
-                if (which & ios_base::out)
-                {
                     current_gptr = off;
                     current_gptr = clamp<size_t>(current_gptr, 0, current_size);
                     setg(buf, buf + current_gptr, buf + current_pptr);
                     return streampos(current_gptr);
+                }
+                if (which & ios_base::out)
+                {
+                    current_pptr = off;
+                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
+                    setp(buf + current_pptr, buf + current_size - 1);
+                    return streampos(current_pptr);
                 }
                 else
                 {
@@ -86,17 +109,17 @@ namespace KCore
             case ios_base::end:
                 if (which & ios_base::in)
                 {
-                    current_pptr = current_size - off - 1;
-                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
-                    setp(buf + current_pptr, buf + current_size - 1);
-                    return streampos(current_pptr);
-                }
-                if (which & ios_base::out)
-                {
                     current_gptr = current_size - off - 1;
                     current_gptr = clamp<size_t>(current_gptr, 0, current_size - 1);
                     setg(buf, buf + current_gptr, buf + current_pptr);
                     return streampos(current_gptr);
+                }
+                if (which & ios_base::out)
+                {
+                    current_pptr = current_size - off - 1;
+                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
+                    setp(buf + current_pptr, buf + current_size - 1);
+                    return streampos(current_pptr);
                 }
                 else
                 {
