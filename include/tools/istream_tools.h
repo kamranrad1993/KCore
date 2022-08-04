@@ -15,18 +15,16 @@ namespace KCore
     private:
         static bool sequenceCheckKeepPos(istream &is, string &sequence)
         {
-            // uint pos = is.tellg();
+            uint pos = is.tellg();
             uint sequencePos = 0;
 
             istream_iterator<char> begin(is);
             istream_iterator<char> end;
-            uint counter = 0;
             for (istream_iterator<char> it = begin; it != end; ++it)
             {
-                counter++;
                 if (sequencePos >= sequence.size())
                 {
-                    is.seekg(-counter, ios_base::cur);
+                    is.seekg(pos, ios_base::beg);
                     return true;
                 }
 
@@ -36,7 +34,7 @@ namespace KCore
                 }
                 else
                 {
-                    is.seekg(-counter, ios_base::cur);
+                    is.seekg(pos, ios_base::beg);
                     return false;
                 }
             }
@@ -44,9 +42,9 @@ namespace KCore
         }
 
     public:
-        static ulong readUntil(istream &is, string &result, const char &delimiter, bool ignoreWS = false)
+        static ulong readUntil(istream &is, string &result, const char &delimiter, bool ignore_ws = false)
         {
-            if (ignoreWS)
+            if (ignore_ws)
                 is.setf(ios_base::skipws);
             else
                 is.unsetf(ios_base::skipws);
@@ -66,9 +64,14 @@ namespace KCore
             return result.size();
         }
 
-        static ulong readUntil(istream &is, string &result, const string &delimiter, bool ignoreWS = false)
+        static ulong readUntil(istream &is, string &result, const string &delimiter, bool ignore_ws = false)
         {
-            if (ignoreWS)
+            if(delimiter.length() == 1)
+            {
+                return readUntil(is, result, delimiter[0], ignore_ws);
+            }
+
+            if (ignore_ws)
                 is.setf(ios_base::skipws);
             else
                 is.unsetf(ios_base::skipws);
@@ -98,18 +101,18 @@ namespace KCore
             //     c = is.peek();
             // }
 
-            auto t = __addressof(is);
-            char v;
-            *t >> v;
+            // auto t = __addressof(is);
+            // char v;
+            // *t >> v;
 
             istream_iterator<char> begin(is);
             istream_iterator<char> end;
 
             for (istream_iterator<char> it = begin; it != end; ++it)
             {
-                LOG(*it, is.tellg());
                 if (*it == firstPart && sequenceCheckKeepPos(is, lastPart))
                 {
+                    it++;
                     break;
                 }
                 else
@@ -117,14 +120,16 @@ namespace KCore
                     result += *it;
                 }
             }
-            is.unget();
-            LOG("+++++++++++++++++++++++++++++++++++++++++++++++");
+            // is.unget();
+            // is.clear(ios_base::eofbit);
+            // is.clear(ios_base::badbit);
+            // is.clear(ios_base::failbit);
             return result.size();
         }
 
-        static ulong readToEnd(istream &is, string &result, bool ignoreWS = false)
+        static ulong readToEnd(istream &is, string &result, bool ignore_ws = false)
         {
-            if (ignoreWS)
+            if (ignore_ws)
                 is.setf(ios_base::skipws);
             else
                 is.unsetf(ios_base::skipws);
@@ -139,9 +144,9 @@ namespace KCore
             return result.size();
         }
 
-        static ulong readToEnd(shared_ptr<istream> is, string &result, bool ignoreWS = false)
+        static ulong readToEnd(shared_ptr<istream> is, string &result, bool ignore_ws = false)
         {
-            if (ignoreWS)
+            if (ignore_ws)
                 is->setf(ios_base::skipws);
             else
                 is->unsetf(ios_base::skipws);
