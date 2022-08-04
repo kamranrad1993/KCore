@@ -40,6 +40,8 @@ function(build_test name)
     add_library(${name}set-app-flags INTERFACE)
     target_compile_options(${name}set-app-flags INTERFACE -O0)
     target_link_libraries(${name} PRIVATE ${name}set-app-flags KCore ${CMAKE_DL_LIBS})
+    link_directories(/usr/lib/debug )
+
 
     # if( supported )
     #     message(STATUS "IPO / LTO enabled")

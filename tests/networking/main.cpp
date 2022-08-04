@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     RequestDefinition requestDefinition(REQUEST_METHOD_GET, "/Downloads/", HTTP_VERSION_1_1);
     HttpRequest req(requestDefinition, add);
     shared_ptr<HttpResponse> result = srq.send(add, req);
-    LOG(result);
+    LOG(*result.get());
 
     return 0;
 }

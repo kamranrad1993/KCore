@@ -68,7 +68,7 @@ namespace KCore
                     return pos_type(-1);
             }
             if (which & ios_base::in)
-                this->setg(this->eback(), this->eback() + noff, (char_type *)this->current_size);
+                this->setg(this->eback(), this->eback() + noff, this->eback() + this->current_size);
             if (which & ios_base::out)
             {
                 this->setp(this->pbase(), this->epptr());
@@ -104,16 +104,6 @@ namespace KCore
 
         int_type underflow() override
         {
-            // return BASE::underflow();
-            // auto _gptr = gptr();
-            // auto _pptr = pptr();
-            // auto _eback = eback();
-            // auto _pbase = pbase();
-            // auto _egptr = egptr();
-            // auto _epptr = epptr();
-
-            // auto dif = _pptr - _gptr;
-
             if (gptr() < pptr())
             {
                 setg(buf, gptr(), pptr());
@@ -127,7 +117,6 @@ namespace KCore
 
         int_type overflow(int_type c) override
         {
-            // return BASE::overflow(c);
             if (!traits_type::eq_int_type(c, traits_type::eof()))
             {
                 if (pptr() == epptr())
@@ -148,14 +137,14 @@ namespace KCore
             streamoff size = epptr() - pbase();
             if (buf == nullptr)
             {
-                buf = (char_type *)malloc(n + 2);
-                current_size = n + 2;
+                buf = (char_type *)malloc(n);
+                current_size = n ;
                 setp(buf, buf + size);
                 setg(buf, buf, buf + size);
             }
             else
             {
-                void *new_buf = malloc(current_size + n + 1);
+                void *new_buf = malloc(current_size + n);
                 current_size = size + n;
                 memcpy(new_buf, buf, size);
                 delete buf;
@@ -183,19 +172,19 @@ namespace KCore
 
         streambuf(size_t length) // TODO may be wrong . must keep length
         {
-            buf = (char_type *)malloc(length + 2);
+            buf = (char_type *)malloc(length);
             setp(buf, buf + length);
             setg(buf, buf, buf + length);
-            current_size = length + 2;
+            current_size = length ;
         }
 
         streambuf(void *ptr, size_t length)
         {
-            buf = (char_type *)malloc(length + 2);
+            buf = (char_type *)malloc(length);
             memcpy(buf, ptr, length);
             setp(buf, buf + length);
             setg(buf, buf, buf + length);
-            current_size = length + 2;
+            current_size = length;
         }
 
         char_type *get_pptr()
@@ -206,6 +195,11 @@ namespace KCore
         char_type *get_gptr()
         {
             return (char_type *)gptr();
+        }
+
+        char_type * get_ptr()
+        {
+            return buf;
         }
 
         streamoff get_length()

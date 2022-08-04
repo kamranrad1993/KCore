@@ -264,7 +264,7 @@ namespace KCore
             if (contentStream.get() != nullptr)
             {
                 string result;
-                contentStream->seekg(0);
+                contentStream->seekg(0, ios_base::beg);
                 IStreamSplitter::readToEnd(contentStream, result);
                 return result;
             }
@@ -278,7 +278,7 @@ namespace KCore
             {
                 out << item.second << END_LINE;
             }
-            out << END_LINE << instance.getStringContent();
+            out << instance.getStringContent();
             return out;
         }
 
@@ -303,7 +303,7 @@ namespace KCore
             if (contentLengthItr != instance.headers.end())
             {
                 ResponseContentLength *contentLength = reinterpret_cast<ResponseContentLength *>(&contentLengthItr->second);
-                instance.contentStream = IStreamSplitter::subStream(in, in.tellg(), contentLength->getValue() + 1);
+                instance.contentStream = IStreamSplitter::subStream(in, in.tellg(), contentLength->getValue());
             }
 
             return in;

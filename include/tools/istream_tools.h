@@ -66,7 +66,7 @@ namespace KCore
 
         static ulong readUntil(istream &is, string &result, const string &delimiter, bool ignore_ws = false)
         {
-            if(delimiter.length() == 1)
+            if (delimiter.length() == 1)
             {
                 return readUntil(is, result, delimiter[0], ignore_ws);
             }
@@ -81,30 +81,6 @@ namespace KCore
             char firstPart = delimiter[0];
             string lastPart = string(delimiter.begin() + 1, delimiter.end());
 
-            KCore::streambuf *buf = (KCore::streambuf *)is.rdbuf();
-
-            // char c = is.peek();
-            // while (c != '\0')
-            // {
-            //     // pos = is.tellg();
-            //     if (c == firstPart && sequenceCheckKeepPos(is, lastPart))
-            //     {
-            //         break;
-            //     }
-            //     else
-            //     {
-            //         // is.seekg(1, ios_base::cur);
-            //         is.get();
-            //         LOG(c);
-            //         result += c;
-            //     }
-            //     c = is.peek();
-            // }
-
-            // auto t = __addressof(is);
-            // char v;
-            // *t >> v;
-
             istream_iterator<char> begin(is);
             istream_iterator<char> end;
 
@@ -112,7 +88,8 @@ namespace KCore
             {
                 if (*it == firstPart && sequenceCheckKeepPos(is, lastPart))
                 {
-                    it++;
+                    for (int i = 0; i < lastPart.length(); i++)
+                        it++;
                     break;
                 }
                 else
@@ -120,10 +97,6 @@ namespace KCore
                     result += *it;
                 }
             }
-            // is.unget();
-            // is.clear(ios_base::eofbit);
-            // is.clear(ios_base::badbit);
-            // is.clear(ios_base::failbit);
             return result.size();
         }
 
@@ -163,27 +136,12 @@ namespace KCore
 
         static shared_ptr<istream> subStream(istream &is, ulong start, ulong length)
         {
-            istream_iterator<char> begin(is);
-            istream_iterator<char> end;
-            ulong counter = 0;
-            vector<char> result;
-            result.reserve(length);
-
-            for (istream_iterator<char> it = begin; it != end; it++)
-            {
-                counter++;
-                if (counter > length)
-                {
-                    break;
-                }
-                result.push_back(*it);
-            }
-
-        KCore:
-            streambuf *resultBuf = new KCore::streambuf(result.data(), result.size());
-            istream *resultStream = new istream(resultBuf);
-            shared_ptr<istream> ptr(resultStream);
-            return ptr;
+            KCore::streambuf *buf = reinterpret_cast<KCore::streambuf *>(is.rdbuf());
+            void *ptr = (void *)buf->get_ptr() + start;
+            KCore::streambuf *result_buf = new KCore::streambuf(ptr, length);
+            istream *result_stream = new istream(result_buf);
+            shared_ptr<istream> result_ptr(result_stream);
+            return result_ptr;
         }
     };
 }

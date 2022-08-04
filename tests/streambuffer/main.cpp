@@ -47,10 +47,10 @@ void test_iterate(iostream &iostr)
         str += *it;
     }
     LOG(str);
-    LOG(iostr.tellp(), " ====== ", iostr.tellg());
 
     iostr.clear(ios_base::eofbit);
     iostr.seekg(4, ios_base::beg);
+    LOG(iostr.tellp(), " ====== ", iostr.tellg());
 
     istream_iterator<char> begin2(iostr);
     istream_iterator<char> end2;
