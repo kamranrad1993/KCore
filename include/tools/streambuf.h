@@ -10,23 +10,21 @@
 namespace KCore
 {
     using namespace std;
-    class streambuf : public std::streambuf
+    class streambuf : public std::basic_streambuf<char>
     {
     private:
+        typedef std::basic_streambuf<char> BASE;
+
         char_type *buf = nullptr;
-        size_t current_pptr = 0;
-        size_t current_gptr = 0;
-        size_t current_size = 0;
+        streamoff current_size = 0;
 
     protected:
         streambuf *setbuf(char *s, streamsize n) override
         {
             buf = (char_type *)malloc(n + 2);
             memcpy(buf, s, n);
-            current_pptr = n + 1;
-            setp(buf, buf + current_pptr);
-            setg(buf, buf, buf + current_pptr);
-            current_gptr = 0;
+            setp(buf, buf + n);
+            setg(buf, buf, buf + n);
             current_size = n + 2;
             return this;
         }
@@ -34,157 +32,88 @@ namespace KCore
         streampos seekoff(streamoff off, ios_base::seekdir way,
                           ios_base::openmode which = ios_base::in | ios_base::out) override
         {
-
-            string str_way = "cur";
-            string str_which = "cur";
-            switch (way)
-            {
-            case ios_base::cur:
-                str_way = "cur";
-                break;
-            case ios_base::beg:
-                str_way = "beg";
-                break;
-            case ios_base::end:
-                str_way = "end";
-                break;
-            }
-            if (which & ios_base::in)
-            {
-                str_which = "in";
-            }
-            else if (which & ios_base::out)
-            {
-                str_which = "out";
-            }
-            LOG("seekoff", off, str_way, str_which);
-
             if (which & ios_base::in && which & ios_base::out)
             {
-                throw std::runtime_error("streambuf::seekoff: invalid openmode");
+                return pos_type(-1);
+                // throw std::runtime_error("streambuf::seekoff: invalid openmode");
             }
 
+            streamoff noff;
             switch (way)
             {
+            case ios_base::beg:
+                noff = 0;
+                break;
             case ios_base::cur:
                 if (which & ios_base::in)
-                {
-                    current_gptr += off;
-                    current_gptr = clamp<size_t>(current_gptr, 0, current_size - 1);
-                    setg(buf, buf + current_gptr, buf + current_pptr);
-                    return streampos(current_gptr);
-                }
-                else if (which & ios_base::out)
-                {
-                    current_pptr += off;
-                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
-                    setp(buf + current_pptr, buf + current_size - 1);
-                    return streampos(current_pptr);
-                }
+                    noff = this->gptr() - this->eback();
                 else
-                {
-                    throw std::runtime_error("streambuf::seekoff: invalid openmode");
-                }
-                break;
-            case ios_base::beg:
-                if (which & ios_base::in)
-                {
-                    current_gptr = off;
-                    current_gptr = clamp<size_t>(current_gptr, 0, current_size);
-                    setg(buf, buf + current_gptr, buf + current_pptr);
-                    return streampos(current_gptr);
-                }
-                if (which & ios_base::out)
-                {
-                    current_pptr = off;
-                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
-                    setp(buf + current_pptr, buf + current_size - 1);
-                    return streampos(current_pptr);
-                }
-                else
-                {
-                    throw std::runtime_error("streambuf::seekoff: invalid openmode");
-                }
+                    noff = this->pptr() - this->pbase();
                 break;
             case ios_base::end:
-                if (which & ios_base::in)
-                {
-                    current_gptr = current_size - off - 1;
-                    current_gptr = clamp<size_t>(current_gptr, 0, current_size - 1);
-                    setg(buf, buf + current_gptr, buf + current_pptr);
-                    return streampos(current_gptr);
-                }
-                if (which & ios_base::out)
-                {
-                    current_pptr = current_size - off - 1;
-                    current_pptr = clamp<size_t>(current_pptr, 0, current_size - 1);
-                    setp(buf + current_pptr, buf + current_size - 1);
-                    return streampos(current_pptr);
-                }
-                else
-                {
-                    throw std::runtime_error("streambuf::seekoff: invalid openmode");
-                }
+                noff = (streamoff)this->buf + this->current_size;
                 break;
             default:
-                // return pos_type(off_type(-1));
-                throw std::runtime_error("streambuf::seekoff: invalid seekdir");
+                return pos_type(-1);
             }
-            return pos_type(off_type(-1));
+
+            noff += off;
+            if (noff < 0 || this->current_size < noff)
+                return pos_type(-1);
+            if (noff != 0)
+            {
+                if ((which & ios_base::in) && this->gptr() == nullptr)
+                    return pos_type(-1);
+                if ((which & ios_base::out) && this->pptr() == nullptr)
+                    return pos_type(-1);
+            }
+            if (which & ios_base::in)
+                this->setg(this->eback(), this->eback() + noff, (char_type *)this->current_size);
+            if (which & ios_base::out)
+            {
+                this->setp(this->pbase(), this->epptr());
+                this->pbump(noff);
+            }
+            return pos_type(noff);
         }
 
         streampos seekpos(streampos sp, ios_base::openmode which = ios_base::in | ios_base::out) override
         {
             return seekoff(off_type(sp), ios_base::beg, which);
-            // // LOG("seekpos ", sp, which);
-            // if (which & ios_base::in && which & ios_base::out == ios_base::out)
-            // {
-            //     throw std::runtime_error("streambuf::seekpos: invalid openmode");
-            // }
-            // if (which & ios_base::in)
-            // {
-            //     current_pptr = sp;
-            //     current_pptr = clamp<size_t>(current_pptr, 0, current_size);
-            //     setp(buf + current_pptr, buf + current_size - 1);
-            //     return streampos(current_pptr);
-            // }
-            // if (which & ios_base::out == ios_base::out)
-            // {
-            //     current_gptr = sp;
-            //     current_gptr = clamp<size_t>(current_gptr, 0, current_size);
-            //     setg(buf, buf + current_gptr, buf + current_size - 1);
-            //     return streampos(current_gptr);
-            // }
-            // return streampos(-1);
         }
 
-        // int sync() override
-        // {
-        //     LOG("sync");
-        //     return 0;
-        // }
+        int sync() override
+        {
+            return BASE::sync();
+        }
 
-        // streamsize showmanyc() override
-        // {
-        //     LOG("showmanyc");
-        //     return 0;
-        // }
+        streamsize showmanyc() override
+        {
+            return BASE::showmanyc();
+        }
 
-        // int uflow() override
-        // {
-        //     LOG("uflow");
-        //     return 0;
-        // }
+        int uflow() override
+        {
+            return BASE::uflow();
+        }
 
-        // int pbackfail(int c = EOF) override
-        // {
-        //     LOG("pbackfail");
-        //     return 0;
-        // }
+        int pbackfail(int c = EOF) override
+        {
+            return BASE::pbackfail();
+        }
 
         int_type underflow() override
         {
-            LOG_TRACE("underflow");
+            // return BASE::underflow();
+            // auto _gptr = gptr();
+            // auto _pptr = pptr();
+            // auto _eback = eback();
+            // auto _pbase = pbase();
+            // auto _egptr = egptr();
+            // auto _epptr = epptr();
+
+            // auto dif = _pptr - _gptr;
+
             if (gptr() < pptr())
             {
                 setg(buf, gptr(), pptr());
@@ -198,7 +127,7 @@ namespace KCore
 
         int_type overflow(int_type c) override
         {
-            LOG_TRACE("overflow");
+            // return BASE::overflow(c);
             if (!traits_type::eq_int_type(c, traits_type::eof()))
             {
                 if (pptr() == epptr())
@@ -207,7 +136,7 @@ namespace KCore
                 }
 
                 *pptr() = traits_type::to_char_type(c);
-                // pbump(1);
+                pbump(1);
                 return c;
             }
 
@@ -216,33 +145,36 @@ namespace KCore
 
         streamsize xsputn(const char_type *s, streamsize n) override
         {
+            streamoff size = epptr() - pbase();
             if (buf == nullptr)
             {
                 buf = (char_type *)malloc(n + 2);
                 current_size = n + 2;
+                setp(buf, buf + size);
+                setg(buf, buf, buf + size);
             }
             else
             {
-                void *new_buf = malloc(current_pptr + n + 1);
-                current_size = current_pptr + n + 1;
-                memcpy(new_buf, buf, current_pptr);
+                void *new_buf = malloc(current_size + n + 1);
+                current_size = size + n;
+                memcpy(new_buf, buf, size);
                 delete buf;
                 buf = (char_type *)new_buf;
             }
 
-            memcpy((void *)(buf + current_pptr), s, n);
-            current_pptr += n;
-            setp(buf, buf + current_pptr);
-            setg(buf, buf, buf + current_pptr);
+            memcpy((void *)(buf + size), s, n);
+            size += n;
+            setp(buf, buf + size);
+            setg(buf, buf, buf + size);
+            this->pbump(size);
 
             return n;
         }
 
-        // streamsize xsgetn(char *s, streamsize n) override
-        // {
-        //     LOG("xsgetn");
-        //     return 0;
-        // }
+        streamsize xsgetn(char *s, streamsize n) override
+        {
+            return BASE::xsgetn(s, n);
+        }
 
     public:
         streambuf()
@@ -252,9 +184,8 @@ namespace KCore
         streambuf(size_t length) // TODO may be wrong . must keep length
         {
             buf = (char_type *)malloc(length + 2);
-            current_pptr = 0;
-            setp(buf, buf + current_pptr);
-            setg(buf, buf, buf + current_pptr);
+            setp(buf, buf + length);
+            setg(buf, buf, buf + length);
             current_size = length + 2;
         }
 
@@ -262,15 +193,14 @@ namespace KCore
         {
             buf = (char_type *)malloc(length + 2);
             memcpy(buf, ptr, length);
-            current_pptr = length + 1;
-            setp(buf, buf + current_pptr);
-            setg(buf, buf, buf + current_pptr);
+            setp(buf, buf + length);
+            setg(buf, buf, buf + length);
             current_size = length + 2;
         }
 
         char_type *get_pptr()
         {
-            return (char_type *)(buf + current_pptr);
+            return (char_type *)pptr();
         }
 
         char_type *get_gptr()
@@ -278,19 +208,20 @@ namespace KCore
             return (char_type *)gptr();
         }
 
-        size_t get_length()
+        streamoff get_length()
         {
-            return current_pptr;
+            streamoff size = pptr() - pbase();
+            return size;
         }
 
         void clear()
         {
-            current_pptr = 0;
+            streamoff size = epptr() - pbase();
+            setp(buf, buf + size);
         }
 
         ~streambuf()
         {
-            // LOG("~streambuf");
             if (buf != nullptr)
             {
                 free(buf);

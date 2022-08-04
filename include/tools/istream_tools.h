@@ -5,7 +5,6 @@
 #include <sstream>
 #include <sys/types.h>
 #include <tools/streambuf.h>
-#include <tools/istream_iterator.h>
 #include <vector>
 
 namespace KCore
@@ -16,16 +15,18 @@ namespace KCore
     private:
         static bool sequenceCheckKeepPos(istream &is, string &sequence)
         {
-            uint pos = is.tellg();
+            // uint pos = is.tellg();
             uint sequencePos = 0;
 
             istream_iterator<char> begin(is);
             istream_iterator<char> end;
+            uint counter = 0;
             for (istream_iterator<char> it = begin; it != end; ++it)
             {
+                counter++;
                 if (sequencePos >= sequence.size())
                 {
-                    is.seekg(pos);
+                    is.seekg(-counter, ios_base::cur);
                     return true;
                 }
 
@@ -35,7 +36,7 @@ namespace KCore
                 }
                 else
                 {
-                    is.seekg(pos);
+                    is.seekg(-counter, ios_base::cur);
                     return false;
                 }
             }
@@ -76,16 +77,37 @@ namespace KCore
             result.clear();
             char firstPart = delimiter[0];
             string lastPart = string(delimiter.begin() + 1, delimiter.end());
-            
-            KCore::streambuf* buf =(KCore::streambuf*) is.rdbuf();
-            // LOG(is.tellg());
+
+            KCore::streambuf *buf = (KCore::streambuf *)is.rdbuf();
+
+            // char c = is.peek();
+            // while (c != '\0')
+            // {
+            //     // pos = is.tellg();
+            //     if (c == firstPart && sequenceCheckKeepPos(is, lastPart))
+            //     {
+            //         break;
+            //     }
+            //     else
+            //     {
+            //         // is.seekg(1, ios_base::cur);
+            //         is.get();
+            //         LOG(c);
+            //         result += c;
+            //     }
+            //     c = is.peek();
+            // }
+
+            auto t = __addressof(is);
+            char v;
+            *t >> v;
 
             istream_iterator<char> begin(is);
             istream_iterator<char> end;
 
             for (istream_iterator<char> it = begin; it != end; ++it)
             {
-                LOG(*it);
+                LOG(*it, is.tellg());
                 if (*it == firstPart && sequenceCheckKeepPos(is, lastPart))
                 {
                     break;
@@ -95,7 +117,8 @@ namespace KCore
                     result += *it;
                 }
             }
-            is.seekg(-1, ios_base::cur);
+            is.unget();
+            LOG("+++++++++++++++++++++++++++++++++++++++++++++++");
             return result.size();
         }
 
