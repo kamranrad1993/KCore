@@ -4,21 +4,33 @@ cmake_minimum_required(VERSION 3.2)
 # include(CheckIPOSupported)
 # check_ipo_supported(RESULT supported OUTPUT error)
 
+set(PLATFORM "Linux" CACHE STRING "Target build platform")
+set(PLATFORM_VALUES "Linux;Windows;Android;Ios;Mac" CACHE STRING "List of possible build platforms")
+set_property(CACHE PLATFORM PROPERTY STRINGS ${PLATFORM_VALUES})
+set(PLATFORM ${PLATFORM}_PLATFORM)
+string(TOUPPER ${PLATFORM} PLATFORM)
+message(STATUS "TARGET PLATFORM IS: " ${PLATFORM})
+
+if(${PLATFORM} MATCHES "ANDROID_PLATFORM")
+# set(CMAKE_LINKER  $ENV{ANDROID_NDK_25}/toolchains/llvm/prebuilt/linux-x86_64/bin/lld)
+# set(CMAKE_CXX_COMPILER $ENV{ANDROID_NDK_25}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++)
+# set(CMAKE_C_COMPILER $ENV{ANDROID_NDK_25}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang)
+# set(CMAKE_CXX_LINK_EXECUTABLE ${CMAKE_LINKER})
+# set(CMAKE_C_LINK_EXECUTABLE ${CMAKE_LINKER})
+# set(ANDROID_NDK $ENV{ANDROID_NDK_25})
+# set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK_25})
+set(CMAKE_ANDROID_ARCH_ABI armeabi-v7a)
+set(ANDROID_ABI armeabi-v7a)
+add_compile_options(--target=armv7a-linux-androideabi28)
+set(ANDROID_STL c++_shared)
+set(CMAKE_TOOLCHAIN_FILE $ENV{ANDROID_NDK_25}/build/cmake/android.toolchain.cmake)
+message(STATUS "Using Toolchain: " ${CMAKE_TOOLCHAIN_FILE})
+endif()
 
 project(KCore)
 set(CMAKE_CXX_STANDARD 20)
 # list(APPEND ${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} "-rdynamic") 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g3")
-
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(PLATFORM "WINDOWS_PLATFORM")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(PLATFORM "LINUX_PLATFORM")
-else()
-    message(FATAL_ERROR "Unsupported system: ${CMAKE_SYSTEM_NAME}")
-endif()
-
 
 option(BUILD_TESTS ON)
 

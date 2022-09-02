@@ -40,14 +40,10 @@ namespace KCore
             req_stream<<request;
 
             s.send(req_buf.get_gptr(), req_buf.get_length());
-            // return s.receive();
-
 
             HttpResponse *response = new HttpResponse();
             auto result = s.receive();
             istream istr(result.get());
-            // string str(result->get_gptr(), result->get_length());
-            // stringstream sstr(str);
             istr >> *response;
 
             shared_ptr<HttpResponse> ptr(response);

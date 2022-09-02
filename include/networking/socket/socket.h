@@ -13,14 +13,13 @@
 #include <tools/streambuf.h>
 #include <tools/memory_streambuf.h>
 #include <vector>
-#ifdef LINUX_PLATFORM
+#if defined(LINUX_PLATFORM) || defined(ANDROID_PLATFORM)
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#endif
-#ifdef WINDOWS_PLATFORM
+#elif defined(WINDOWS_PLATFORM)
 #include <iphlpapi.h>
 #include <windows.h>
 #include <winsock2.h>
@@ -34,16 +33,16 @@ namespace KCore
     class Socket
     {
     private:
-#ifdef LINUX_PLATFORM
+#if defined(LINUX_PLATFORM) || defined(ANDROID_PLATFORM) 
         vector<sockaddr_in> serv_addrs;
         int socket_instance;
-#endif
-#ifdef WINDOWS_PLATFORM
+
+#elif defined(WINDOWS_PLATFORM)
         vector<addrinfo> serv_addrs;
         SOCKET socket_instance = INVALID_SOCKET;
 #endif
     public:
-        size_t buffer_size = 256;
+        size_t buffer_size = 2048;
 
     public:
         Socket(string address, uint16_t port)
@@ -53,7 +52,7 @@ namespace KCore
 
         Socket(const char *address, int len, uint16_t port)
         {
-#ifdef LINUX_PLATFORM
+#if defined(LINUX_PLATFORM) || defined(ANDROID_PLATFORM)
             socket_instance = socket(AF_INET, SOCK_STREAM, 0);
             hostent *host = gethostbyname(address);
 
@@ -71,8 +70,7 @@ namespace KCore
             // serv_addr.sin_family = AF_INET;
             // serv_addr.sin_addr.s_addr = inet_addr(address);
             // serv_addr.sin_port = htons(port);
-#endif
-#ifdef WINDOWS_PLATFORM
+#elif defined(WINDOWS_PLATFORM)
             buffer = vector<char>(buffer_size, 0);
             WSADATA wsaData;
             int result;
@@ -105,7 +103,7 @@ namespace KCore
 
         int connect()
         {
-#ifdef LINUX_PLATFORM
+#if defined(LINUX_PLATFORM) || defined(ANDROID_PLATFORM)
             for (sockaddr_in serv_addr : serv_addrs)
             {
                 int result = ::connect(socket_instance, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
@@ -114,8 +112,7 @@ namespace KCore
                     return result;
                 }
             }
-#endif
-#ifdef WINDOWS_PLATFORM
+#elif defined(WINDOWS_PLATFORM)
             for (addrinfo serv_addr : serv_addrs)
             {
                 int result = ::connect(socket_instance, serv_addr.ai_addr, (int)serv_addr.ai_addrlen);
@@ -140,10 +137,9 @@ namespace KCore
 
         void send(void *data, size_t len)
         {
-#ifdef LINUX_PLATFORM
+#if defined(LINUX_PLATFORM) || defined(ANDROID_PLATFORM)
             ::send(socket_instance, data, len, 0);
-#endif
-#ifdef WINDOWS_PLATFORM
+#elif defined(WINDOWS_PLATFORM)
             ::send(socket_instance, (char *)data, len, 0);
 #endif
         }
@@ -164,10 +160,8 @@ namespace KCore
             int available = recv(socket_instance, buf.get_pptr(), buffer_size, MSG_PEEK);
             while (available > 0)
             {
-                available = recv(socket_instance, buf.get_pptr(), available, 0);
+                available = recv(socket_instance, buf.get_pptr(), available, MSG_WAITALL);
                 result_stream.write(buf.get_gptr(), available);
-                // string s(buf.get_gptr(), buf.get_length());
-                // LOG(s);
                 buf.clear();
             }
 

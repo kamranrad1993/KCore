@@ -16,10 +16,14 @@
 #endif
 #ifdef WINDOWS_PLATFORM
 #include <dbghelp.h>
+#include <intrin.h>
 #include <mutex>
 #include <sstream>
 #include <stdio.h>
-#include <intrin.h>
+#endif
+#ifdef ANDROID_PLATFORM
+#include <dlfcn.h>
+#include <unwind.h>
 #endif
 
 // #ifdef WINDOWS_PLATFORM
@@ -74,6 +78,7 @@ namespace KCore
 #elif WINDOWS_PLATFORM
 
 #endif
+        return 0;
     }
 
 #ifdef WINDOWS_PLATFORM
@@ -224,11 +229,63 @@ namespace KCore
     }
 #endif
 
-    // https://stackoverflow.com/a/63856113/4760642
+#ifdef ANDROID_PLATFORM
+    //  https://androiderrors.com/android-ndk-getting-the-backtrace/
+    struct BacktraceState
+    {
+        void **current;
+        void **end;
+    };
+
+    static _Unwind_Reason_Code unwindCallback(struct _Unwind_Context *context, void *arg)
+    {
+        BacktraceState *state = static_cast<BacktraceState *>(arg);
+        uintptr_t pc = _Unwind_GetIP(context);
+        if (pc)
+        {
+            if (state->current == state->end)
+            {
+                return _URC_END_OF_STACK;
+            }
+            else
+            {
+                *state->current++ = reinterpret_cast<void *>(pc);
+            }
+        }
+        return _URC_NO_REASON;
+    }
+
+    size_t captureBacktrace(void **buffer, size_t max)
+    {
+        BacktraceState state = {buffer, buffer + max};
+        _Unwind_Backtrace(unwindCallback, &state);
+
+        return state.current - buffer;
+    }
+
+    void dumpBacktrace(std::ostream &os, void **buffer, size_t count)
+    {
+        for (size_t idx = 0; idx < count; ++idx)
+        {
+            const void *addr = buffer[idx];
+            const char *symbol = "";
+
+            Dl_info info;
+            if (dladdr(addr, &info) && info.dli_sname)
+            {
+                symbol = info.dli_sname;
+            }
+
+            os << "  #  " << idx << ": " << addr << "  " << symbol << "\n";
+        }
+    }
+#endif
+
     string get_call_stack(int depth)
     {
-        string call_stack;
+        string call_stack_string;
 #ifdef LINUX_PLATFORM
+        // https://stackoverflow.com/a/63856113/4760642
         void *callstack[depth];
         int frame_count = backtrace(callstack, sizeof(callstack) / sizeof(callstack[0]));
         for (int i = 1; i < frame_count; i++)
@@ -242,8 +299,8 @@ namespace KCore
                 VMA_addr -= 1; // https://stackoverflow.com/questions/11579509/wrong-line-numbers-from-addr2line/63841497#63841497
                 string cmd = vformat("addr2line -e %s -Cifp %zx", info.dli_fname, VMA_addr);
                 string result = sh(cmd);
-                call_stack.append(result);
-                call_stack.append("\n");
+                call_stack_string.append(result);
+                call_stack_string.append("\n");
                 // cout << result << endl;
             }
         }
@@ -269,9 +326,9 @@ namespace KCore
         //     if (SymFromAddr(GetCurrentProcess(), (DWORD64)callstack[i], &displacement, info))
         //     {
         //         // cout << info->Name << info->NameLen << endl;
-        //         call_stack.append(info->Name);
-        //         call_stack.append(to_string(info->NameLen));
-        //         call_stack.append("\n");
+        //         call_stack_string.append(info->Name);
+        //         call_stack_string.append(to_string(info->NameLen));
+        //         call_stack_string.append("\n");
         //     }
         //     else
         //     {
@@ -284,9 +341,28 @@ namespace KCore
         {
             cout << frame.name << ":" << frame.module << ":" << frame.file << ":" << frame.line << endl;
         }
+#elif ANDROID_PLATFORM
+        void *callstack[depth];
+        captureBacktrace(&callstack[0], depth);
+        for (size_t idx = 0; idx < depth; ++idx)
+        {
+            void *addr = callstack[idx];
+            const char *symbol = "";
+
+            Dl_info info;
+            if (dladdr(addr, &info) && info.dli_sname)
+            {
+                symbol = info.dli_sname;
+            }
+            call_stack_string.append(to_string(idx));
+            call_stack_string.append(" : ");
+            call_stack_string.append(to_string(*static_cast<size_t *>(addr)));
+            call_stack_string.append("  ");
+            call_stack_string.append(symbol);
+            call_stack_string.append("\n");
+        }
+
 #endif
-        return call_stack;
+        return call_stack_string;
     }
-
-
 }

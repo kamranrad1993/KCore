@@ -21,11 +21,11 @@ namespace KCore
     protected:
         streambuf *setbuf(char *s, streamsize n) override
         {
-            buf = (char_type *)malloc(n + 2);
+            buf = (char_type *)malloc(n);
             memcpy(buf, s, n);
             setp(buf, buf + n);
             setg(buf, buf, buf + n);
-            current_size = n + 2;
+            current_size = n;
             return this;
         }
 

@@ -137,7 +137,7 @@ namespace KCore
         static shared_ptr<istream> subStream(istream &is, ulong start, ulong length)
         {
             KCore::streambuf *buf = reinterpret_cast<KCore::streambuf *>(is.rdbuf());
-            void *ptr = (void *)buf->get_ptr() + start;
+            void *ptr = (void *)((ulong)buf->get_ptr() + start);
             KCore::streambuf *result_buf = new KCore::streambuf(ptr, length);
             istream *result_stream = new istream(result_buf);
             shared_ptr<istream> result_ptr(result_stream);

@@ -1,0 +1,11 @@
+[default]
+name=Default
+runtime=host
+toolchain=default
+config-opts=-DBUILD_TESTS=ON
+run-opts=
+prefix=/home/johndoe/.cache/gnome-builder/install/KCore/host
+app-id=
+postbuild=
+prebuild=
+default=true

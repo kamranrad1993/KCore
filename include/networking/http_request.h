@@ -2,7 +2,7 @@
 
 #include <asio.hpp>
 #include <climits>
-#include <hash_map>
+#include <map>
 #include <iosfwd>
 #include <memory>
 #include <networking/http_definitions.h>

@@ -26,19 +26,26 @@ void test_insert(iostream &iostr)
 void test_seek(iostream &iostr)
 {
     char c;
-    iostr.seekg(4);
-    iostr.seekg(1);
-    iostr.get(c);
-    LOG(c, iostr.tellg());
+    iostr.clear(ios_base::eofbit);
 
     iostr.seekg(4);
     iostr.get(c);
-    LOG(c, iostr.tellg());
+    LOG("test_seek", c, iostr.tellg());
+
+    iostr.seekg(1);
+    iostr.get(c);
+    LOG("test_seek", c, iostr.tellg());
+
+    iostr.seekg(4);
+    iostr.get(c);
+    LOG("test_seek", c, iostr.tellg());
 }
 
 void test_iterate(iostream &iostr)
 {
-    iostr.seekg(1, ios_base::beg);
+    iostr.clear(ios_base::eofbit);
+    iostr.seekg(0, ios_base::beg);
+    LOG("test_iterate", iostr.tellp(), " ====== ", iostr.tellg());
     istream_iterator<char> begin(iostr);
     istream_iterator<char> end;
     string str;
@@ -46,11 +53,11 @@ void test_iterate(iostream &iostr)
     {
         str += *it;
     }
-    LOG(str);
+    LOG("test_iterate", str);
 
     iostr.clear(ios_base::eofbit);
     iostr.seekg(4, ios_base::beg);
-    LOG(iostr.tellp(), " ====== ", iostr.tellg());
+    LOG("test_iterate", iostr.tellp(), " ====== ", iostr.tellg());
 
     istream_iterator<char> begin2(iostr);
     istream_iterator<char> end2;
@@ -59,72 +66,21 @@ void test_iterate(iostream &iostr)
     {
         str += *it2;
     }
-    LOG(str);
-    LOG(iostr.tellp(), " ====== ", iostr.tellg());
+    LOG("test_iterate", str);
+    LOG("test_iterate", iostr.tellp(), " ====== ", iostr.tellg());
 }
 
 int main(int argc, char **argv)
 {
     KCore::streambuf buf;
-    // std::stringbuf buf("");
     iostream iostr(&buf);
     iostr.unsetf(ios_base::skipws);
 
     test_insert(iostr);
 
-    // test_seek(iostr);
+    test_seek(iostr);
 
     test_iterate(iostr);
-
-    // // LOG(buf.get_gptr());
-    // iostr.seekg(1);
-    // // iostr.seekp(0);
-    // LOG(read_stream(iostr, 0, 3));
-    // LOG(read_stream(iostr, 0, 5));
-
-    // iostr.seekg(1, ios_base::beg);
-    // LOG(iostr.tellp(), " ====== ", iostr.tellg());
-    // istream_iterator<char> begin(iostr);
-    // istream_iterator<char> end;
-    // string str;
-    // int counter = 0;
-    // for (istream_iterator<char> it = begin; it != end; ++it)
-    // {
-    //     str += *it;
-    //     counter++;
-    //     if (counter >= 2)
-    //         break;
-    // }
-    // LOG(str);
-    // LOG(iostr.tellp(), " ====== ", iostr.tellg());
-
-    // istream_iterator<char> begin2(iostr);
-    // istream_iterator<char> end2;
-    // str.clear();
-    // for (istream_iterator<char> it = begin2; it != end2; ++it)
-    // {
-    //     if (counter >= 5)
-    //         break;
-    //     str += *it;
-    //     counter++;
-    // }
-    // LOG(str);
-    // LOG(iostr.tellp(), " ====== ", iostr.tellg());
-
-    // char c;
-    // iostr.get(c);
-    // LOG(c);
-    // LOG(iostr.tellp(), " ====== ", iostr.tellg());
-    // iostr.seekg(1, ios_base::beg);
-
-    // iostr.get(c);
-    // LOG(c);
-    // LOG(iostr.tellp(), " ====== ", iostr.tellg());
-
-    // iostr.peek();
-    // iostr.get(c);
-    // LOG(c);
-    // LOG(iostr.tellp(), " ====== ", iostr.tellg());
 
     return 0;
 }

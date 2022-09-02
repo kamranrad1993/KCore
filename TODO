@@ -26,3 +26,5 @@
 
 ☐ create core dumper
 
+☐ create stepped stream buffer
+    ☐ remove current_size from stream buffer if possible

@@ -10,7 +10,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(TAR_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/${CMAKE_SYSTEM_NAME}/bsdtar)
 else()
-    message(FATAL_ERROR "Unsupported system: ${CMAKE_SYSTEM_NAME}")
+    # message(FATAL_ERROR "Unsupported system: ${CMAKE_SYSTEM_NAME}")
 endif()
 
 
