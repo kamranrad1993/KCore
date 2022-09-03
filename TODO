@@ -11,6 +11,7 @@
     ✔ loop thread may not kill. must review @done(22-06-18 20:53)
     ☐ create socket packet detection rule. it may be constructed with fixed size template type that read on data available.
         at least it contains packet length.
+    ☐ create dns query as a separate module 
 
 ✔ use my own socket connection for http requests @done(22-07-10 10:16)
     
@@ -28,3 +29,6 @@
 
 ☐ create stepped stream buffer
     ☐ remove current_size from stream buffer if possible
+
+☐ create cmake android build varient completely : choosing architecture
+☐ create jni build android to deploy strightly from here : show console output or provide native surface
