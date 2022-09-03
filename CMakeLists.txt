@@ -19,10 +19,10 @@ if(${PLATFORM} MATCHES "ANDROID_PLATFORM")
 # set(CMAKE_C_LINK_EXECUTABLE ${CMAKE_LINKER})
 # set(ANDROID_NDK $ENV{ANDROID_NDK_25})
 # set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK_25})
-set(CMAKE_ANDROID_ARCH_ABI armeabi-v7a)
-set(ANDROID_ABI armeabi-v7a)
-add_compile_options(--target=armv7a-linux-androideabi28)
-set(ANDROID_STL c++_shared)
+set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
+set(ANDROID_ABI arm64-v8a)
+# add_compile_options(--target=armv7a-linux-androideabi28)
+set(ANDROID_STL c++_static)
 set(CMAKE_TOOLCHAIN_FILE $ENV{ANDROID_NDK_25}/build/cmake/android.toolchain.cmake)
 message(STATUS "Using Toolchain: " ${CMAKE_TOOLCHAIN_FILE})
 endif()
@@ -63,7 +63,7 @@ target_compile_options(KCore-set-app-flags INTERFACE -O0)
 add_library(KCore STATIC ${PROJECT_HEADERS} ${PROJECT_SOURCES} )
 target_link_libraries(KCore
     KCore-set-app-flags
-    stdc++
+    # stdc++
     ${CMAKE_DL_LIBS}
     # ${CURL_LIB_FILE}
     # ssl #TODO curl dependency. enable it in external cmake.

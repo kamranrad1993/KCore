@@ -1,6 +1,5 @@
 #pragma once
 
-#include <asio.hpp>
 #include <climits>
 #include <map>
 #include <iosfwd>
@@ -15,7 +14,6 @@
 namespace KCore
 {
     using namespace std;
-    using asio::ip::tcp;
 
     struct RequestHeader
     {
